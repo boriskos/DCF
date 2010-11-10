@@ -1,0 +1,10 @@
+﻿insert into triviamasster.users 
+	(UserEmail, Points, `Time`, DividendPoints, PointsSinceLastLogin, UserName)
+SELECT
+`users`.`userID` as UserEmail,
+`users`.`Points`,
+`users`.`time`,
+`users`.`dividendPoints`,
+`users`.`pointsSinceLastLogin`,
+`users`.`userName`
+FROM `guess`.`users`;

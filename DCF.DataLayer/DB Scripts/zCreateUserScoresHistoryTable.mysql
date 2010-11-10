@@ -1,0 +1,10 @@
+﻿delimiter $$
+
+CREATE TABLE IF NOT EXISTS UserScoresHistory ( 
+	UserID int(11) NOT NULL, 
+	Belief double NOT NULL, 
+	Version int(11) NULL, 
+	
+	PRIMARY KEY(UserID),
+	FOREIGN KEY ushUserID_fkey (UserID) REFERENCES Users (UserID)
+) ENGINE = InnoDB$$

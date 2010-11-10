@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="RepairKeySample">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+            UserID int(11) NOT NULL PRIMARY KEY,
+            Belief double NOT NULL,
+            Version int(11) NULL,
+            NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts) 
+          (SELECT u.ID as UserId, 0.2 as Belief, 1 as Version, 
+          (SELECT COUNT(*) FROM UserCapitals uc WHERE uc.UserID=u.ID) as NumOfFacts FROM Users u)        
+        </NonQueryStatement>
+        <DropTableIfExists TableName="ScoredFacts"/>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS ScoredFacts ( 
+            ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+            Country varchar(50) NOT NULL, 
+            City varchar(100) NOT NULL, 
+            Factor int(11) NOT NULL, 
+            Score DOUBLE NOT NULL, 
+            Correctness TINYINT(1) NULL, 
+            INDEX SF_CountryCity_IND (Country ASC, City ASC)) 
+          ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO ScoredFacts (City, Country, Factor, Score) 
+          SELECT a.City, a.Country, count(a.ID) AS Factor, 0 AS Score 
+          FROM UserCapitals a GROUP BY country, city
+        </NonQueryStatement>
+        <DropTableIfExists TableName="ScoredFactsUsers"/>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS ScoredFactsUsers (
+            FactId INT(11) NOT NULL,
+            UserId INT(11) NOT NULL, 
+            INDEX FactId_idx (FactId ASC), 
+            INDEX UserId_idx (UserId ASC) )
+          ENGINE=MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO ScoredFactsUsers (
+          SELECT sf.ID as FactId, uc.UserID FROM UserCapitals uc, ScoredFacts sf 
+          WHERE uc.City = sf.City AND uc.Country=sf.Country )
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS RepKeyResults ( FactId int(11) NOT NULL) ENGINE = MEMORY
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <PerformanceCounter Name="Rules">
+          <PerformanceCounter Name="RepairKeySample">
+            <PerformanceCounter Name="RepairKeySample_Update">
+              <NonQueryStatement>
+                UPDATE ScoredFacts sf SET sf.Score = (SELECT SUM(us.Belief) FROM UserScores us, ScoredFactsUsers sfu 
+                WHERE sf.ID=sfu.FactId AND sfu.UserId=us.UserId)
+              </NonQueryStatement>
+              <NonQueryStatement>
+                UPDATE ScoredFacts sf, (SELECT SUM(Score) AS CountryScore, sf1.Country FROM ScoredFacts sf1 GROUP BY sf1.Country) cs 
+                SET sf.Score = sf.Score / cs.CountryScore WHERE sf.Country = cs.Country
+              </NonQueryStatement>
+            </PerformanceCounter>
+            <PerformanceCounter Name="RepairKeySample_Fetch">
+              <QueryStatement Target="scoredFactsDs">SELECT * FROM ScoredFacts</QueryStatement>
+            </PerformanceCounter>
+            <RepairKey IdField="ID" KeyField="Country" ProbabilityField="Score" 
+                       TargetTable="RepKeyResults" Source="scoredFactsDs"/>
+            <PerformanceCounter Name="RepairKeySample_Update">
+              <NonQueryStatement>
+                UPDATE UserScores us SET us.Belief=(us.Belief +
+                (SELECT COUNT(*) FROM RepKeyResults rk, ScoredFactsUsers sfu WHERE rk.FactId=sfu.FactId AND sfu.UserID=us.UserId)/
+                us.Version/us.NumOfFacts), us.Version=us.Version+1
+              </NonQueryStatement>
+            </PerformanceCounter>
+          </PerformanceCounter>
+        </PerformanceCounter>
+      </Body>
+    </Rule>
+  </Sampling>
+</Rules>

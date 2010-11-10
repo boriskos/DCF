@@ -1,0 +1,16 @@
+﻿delimiter $$
+
+CREATE TABLE Users (
+  UserID int(11) unsigned NOT NULL AUTO_INCREMENT,
+  UserEmail varchar(50) COLLATE utf8_bin NOT NULL,
+  Points int(11) unsigned NOT NULL DEFAULT '0',
+  Time datetime NOT NULL,
+  DividendPoints int(11) NOT NULL DEFAULT '0',
+  PointsSinceLastLogin int(11) NOT NULL DEFAULT '0',
+  UserName varchar(100) COLLATE utf8_bin NOT NULL,
+  
+  PRIMARY KEY (UserID),
+  UNIQUE KEY uUserEmail_ukey (UserEmail),
+  KEY uPoints_Dividents_key (Points,DividendPoints)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+

@@ -1,0 +1,14 @@
+﻿delimiter $$
+
+CREATE TABLE Items (
+  ItemID int(11) unsigned NOT NULL AUTO_INCREMENT,
+  ItemName varchar(500) COLLATE utf8_bin NOT NULL,
+  TopicID int(11) unsigned NOT NULL,
+  
+  PRIMARY KEY (ItemID),
+  FOREIGN KEY iTopicID_fkey (TopicID) REFERENCES Topics (TopicId),
+  UNIQUE KEY iTopicID_ItemName_ukey (TopicID, ItemName(255)),
+  KEY iTopicID_key (TopicID),
+  KEY iItemName_key (ItemName(255))
+) ENGINE=InnoDB AUTO_INCREMENT=8164 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+

@@ -1,0 +1,15 @@
+﻿delimiter $$
+
+CREATE TABLE Topics (
+  TopicId int(11) unsigned NOT NULL AUTO_INCREMENT,
+  TopicName varchar(70) COLLATE utf8_bin NOT NULL,
+  TopicText varchar(200) COLLATE utf8_bin NOT NULL,
+  TopicType smallint(1) unsigned ZEROFILL NOT NULL,
+  Category varchar(70) COLLATE utf8_bin NOT NULL,
+  Rank DOUBLE,
+  Value varchar(100) COLLATE utf8_bin NULL,
+
+  PRIMARY KEY (TopicId),
+  UNIQUE KEY tTopicName_ukey (TopicName)
+) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+

@@ -1,0 +1,15 @@
+﻿delimiter $$
+
+CREATE TABLE IF NOT EXISTS ScoredFacts ( 
+	ItemID INT(11) NOT NULL, 
+	TopicID INT(11) NOT NULL, 
+	Factor int(11) NOT NULL, 
+	Score DOUBLE NOT NULL, 
+	Category varchar(70) COLLATE utf8_bin NOT NULL,
+	Correctness TINYINT(1) NULL, 
+	
+	PRIMARY KEY(ItemID),
+	FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID),
+	FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID),
+	FOREIGN KEY sfCategory_fkey (Category) REFERENCES Topics (Category)
+) ENGINE = InnoDB$$

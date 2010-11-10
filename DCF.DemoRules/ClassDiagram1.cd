@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DCF.DemoRules.OfflineCleaningRuleProvider" BaseTypeListCollapsed="true">
+    <Position X="7" Y="3" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAAAAAAAAAACAAAAAAAAAAgAAAAAAg=</HashCode>
+      <FileName>OfflineCleaningRuleProvider.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="MySqlUtils" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="DCF.DemoRules.DanielConvergence" Collapsed="true">
+    <Position X="0.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABEAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rule.DanielConvergence.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DCF.DemoRules.RepairKeySample" Collapsed="true">
+    <Position X="4.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAACAABAAAAAAAAAAAAAAAAQQAAAAAAAAQBAAAQ=</HashCode>
+      <FileName>Rule.RepairKeySample.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DCF.DataLayerAwareLib.MySqlRule" Collapsed="true">
+    <Position X="2.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="DCF.Lib.Rule" Collapsed="true">
+    <Position X="2.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="DCF.DataLayer.MySqlUtils" Collapsed="true">
+    <Position X="5.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="DCF.Lib.IRuleSupplier">
+    <Position X="9.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
