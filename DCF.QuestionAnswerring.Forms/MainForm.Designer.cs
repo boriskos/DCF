@@ -58,7 +58,7 @@
             this._chooseFormLbl.Name = "_chooseFormLbl";
             this._chooseFormLbl.Padding = new System.Windows.Forms.Padding(5, 5, 0, 10);
             this._chooseFormLbl.Size = new System.Drawing.Size(317, 41);
-            this._chooseFormLbl.TabIndex = 0;
+            this._chooseFormLbl.TabIndex = 100;
             this._chooseFormLbl.Text = "Please choose or create a question";
             // 
             // panel1
@@ -84,7 +84,7 @@
             this._btnOpen.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._btnOpen.Font = new System.Drawing.Font("Comic Sans MS", 12F, System.Drawing.FontStyle.Bold);
             this._btnOpen.ForeColor = System.Drawing.Color.White;
-            this._btnOpen.Location = new System.Drawing.Point(172, 6);
+            this._btnOpen.Location = new System.Drawing.Point(5, 6);
             this._btnOpen.Name = "_btnOpen";
             this._btnOpen.Size = new System.Drawing.Size(127, 34);
             this._btnOpen.TabIndex = 1;
@@ -101,17 +101,19 @@
             this._btnCreateNew.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this._btnCreateNew.Font = new System.Drawing.Font("Comic Sans MS", 10F, System.Drawing.FontStyle.Bold);
             this._btnCreateNew.ForeColor = System.Drawing.Color.White;
-            this._btnCreateNew.Location = new System.Drawing.Point(5, 6);
+            this._btnCreateNew.Location = new System.Drawing.Point(156, 6);
             this._btnCreateNew.Name = "_btnCreateNew";
             this._btnCreateNew.Size = new System.Drawing.Size(161, 34);
-            this._btnCreateNew.TabIndex = 1;
+            this._btnCreateNew.TabIndex = 10;
             this._btnCreateNew.Text = "Create new question";
             this._btnCreateNew.UseVisualStyleBackColor = false;
+            this._btnCreateNew.Visible = false;
             // 
             // _btnExit
             // 
             this._btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this._btnExit.BackColor = System.Drawing.Color.Olive;
+            this._btnExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this._btnExit.FlatAppearance.BorderColor = System.Drawing.Color.Olive;
             this._btnExit.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this._btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DarkKhaki;
@@ -121,7 +123,7 @@
             this._btnExit.Location = new System.Drawing.Point(473, 6);
             this._btnExit.Name = "_btnExit";
             this._btnExit.Size = new System.Drawing.Size(123, 34);
-            this._btnExit.TabIndex = 0;
+            this._btnExit.TabIndex = 2;
             this._btnExit.Text = "Exit";
             this._btnExit.UseVisualStyleBackColor = false;
             this._btnExit.Click += new System.EventHandler(this._btnExit_Click);
@@ -153,7 +155,7 @@
             this.splitContainer1.Panel2.Controls.Add(this._itemDescLbl);
             this.splitContainer1.Size = new System.Drawing.Size(603, 312);
             this.splitContainer1.SplitterDistance = 201;
-            this.splitContainer1.TabIndex = 0;
+            this.splitContainer1.TabIndex = 4;
             // 
             // _lblItem
             // 
@@ -165,7 +167,7 @@
             this._lblItem.Name = "_lblItem";
             this._lblItem.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
             this._lblItem.Size = new System.Drawing.Size(89, 23);
-            this._lblItem.TabIndex = 1;
+            this._lblItem.TabIndex = 100;
             this._lblItem.Text = "Question:";
             // 
             // _lboxQuestions
@@ -199,7 +201,7 @@
             this._tbDescription.Name = "_tbDescription";
             this._tbDescription.ReadOnly = true;
             this._tbDescription.Size = new System.Drawing.Size(387, 278);
-            this._tbDescription.TabIndex = 1;
+            this._tbDescription.TabIndex = 100;
             this._tbDescription.TabStop = false;
             // 
             // _itemDescLbl
@@ -212,16 +214,18 @@
             this._itemDescLbl.Name = "_itemDescLbl";
             this._itemDescLbl.Padding = new System.Windows.Forms.Padding(5, 0, 0, 10);
             this._itemDescLbl.Size = new System.Drawing.Size(108, 33);
-            this._itemDescLbl.TabIndex = 0;
+            this._itemDescLbl.TabIndex = 100;
             this._itemDescLbl.Text = "Description:";
             // 
             // MainForm
             // 
+            this.AcceptButton = this._btnOpen;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.CancelButton = this._btnExit;
             this.ClientSize = new System.Drawing.Size(603, 405);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -229,6 +233,7 @@
             this.MinimumSize = new System.Drawing.Size(500, 200);
             this.Name = "MainForm";
             this.Text = "Question Answering";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);

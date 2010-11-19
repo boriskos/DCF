@@ -31,7 +31,7 @@ namespace DCF.DemoRules
             return new List<DCF.Lib.Rule>() 
             { 
                 new DanielConvergence(m_sqlUstils, this),  
-                new RepairKeySample(m_sqlUstils, this)
+                new RepairKeySample(m_sqlUstils, this, "")
             };
         }
 

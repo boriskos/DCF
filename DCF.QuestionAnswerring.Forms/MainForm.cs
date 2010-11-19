@@ -20,5 +20,10 @@ namespace DCF.QuestionAnswering
         {
             Application.Exit();
         }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            ActiveControl = _lboxQuestions;
+        }
     }
 }

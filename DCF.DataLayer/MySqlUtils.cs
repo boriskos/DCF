@@ -139,6 +139,33 @@ namespace DCF.DataLayer
                 }
             }
         }
+        public void RePopulateExistingTable(DataSet ds)
+        {
+            using (new PerformanceCounter(SqlUtilsTimerName))
+            using (new PerformanceCounter("RePopulateExistingTable"))
+            {
+                foreach (DataTable tbl in ds.Tables)
+                {
+                    Logger.Assert(!string.IsNullOrEmpty(tbl.TableName), "Table Name must be set");
+                    DbCommand cmdDrop = m_sqlConnection.CreateCommand();
+                    cmdDrop.CommandText = string.Format("TRUNCATE TABLE {0}", tbl.TableName);
+                    int res = cmdDrop.ExecuteNonQuery();
+
+                    foreach (DataRow row in tbl.Rows)
+                    {
+                        row.AcceptChanges();
+                        row.SetAdded();
+                    }
+                    using (DbDataAdapter da = CreateDataAdapter(string.Format(
+                        "select * from {0}", tbl.TableName)))
+                    using (DbCommandBuilder cb = CreateCommandBuilder(da))
+                    {
+                        da.UpdateBatchSize = 10;
+                        da.Update(tbl);
+                    }
+                }
+            }
+        }
         public void RePopulateExistingTable(DataTable tbl, DbTransaction transaction)
         {
             using (new PerformanceCounter(SqlUtilsTimerName))

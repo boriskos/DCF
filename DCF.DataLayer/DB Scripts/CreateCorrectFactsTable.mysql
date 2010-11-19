@@ -1,0 +1,3 @@
+﻿CREATE TABLE CorrectFacts AS (SELECT * FROM Items WHERE 1=0)
+
+

@@ -15,5 +15,22 @@ namespace DCF.QuestionAnswering
         {
             InitializeComponent();
         }
+
+        private void _dataGridViewQueryResults_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            int colWidth = 0;
+            foreach (DataGridViewColumn col in _dataGridViewQueryResults.Columns)
+                colWidth += col.Width;
+            int start_location = Math.Max( _splitContQuery.Panel2.Width / 2 - colWidth / 2, 0);
+            Point oldLocation = _dataGridViewQueryResults.Location;
+            _dataGridViewQueryResults.Location = new Point(start_location, 0);
+            Size oldSize = _dataGridViewQueryResults.Size;
+            _dataGridViewQueryResults.Size = new Size(oldLocation.X+oldSize.Width-start_location, oldSize.Height);
+        }
+
+        private void _dataGridViewQueryResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 }

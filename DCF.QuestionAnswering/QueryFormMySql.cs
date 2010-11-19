@@ -69,15 +69,16 @@ namespace DCF.QuestionAnswering
                 int endParamIndex = questionText.IndexOf('}', startParamIndex);
                 curPosition = endParamIndex + 1;
                 int curParamInd = int.Parse(questionText.Substring(startParamIndex + 1, endParamIndex - startParamIndex - 1));
-                ComboBox cb = new ComboBox()
+                BBBNOVA.BNComboBox cb = new BBBNOVA.BNComboBox()
                 {
+                    Size = new Size(150, Size.Height),
+                    Font = m_comboBoxInfo.Font,
+                    ForeColor = Color.White,
+                    BackColor = Color.Black,
                     DataSource = ds.Tables[0],
                     DisplayMember = m_paramNames[curParamInd],
-                    Font = m_comboBoxInfo.Font,
-                    ForeColor = m_comboBoxInfo.ForeColor,
                     Margin = m_comboBoxInfo.Margins,
-                    BackColor = m_comboBoxInfo.BackColor,
-                    FlatStyle = FlatStyle.Flat
+                    DropDownWidth = 150
                 };
                 m_cbList.Add(cb);
                 _flowLayoutPanelQueryText.Controls.Add(cb);
@@ -90,7 +91,7 @@ namespace DCF.QuestionAnswering
         private string[] m_paramNames;
         private MySqlUtils m_sqlUtils;
         private string m_queryBody;
-        private List<ComboBox> m_cbList = new List<ComboBox>();
+        private List<BBBNOVA.BNComboBox> m_cbList = new List<BBBNOVA.BNComboBox>();
 
         private void _btnQuery_Click(object sender, EventArgs e)
         {
