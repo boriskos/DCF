@@ -61,5 +61,14 @@ namespace DCF.DataLayer
                 throw new ArgumentOutOfRangeException("The class Connection is not a MySqlConnection");
             return new MySqlDataAdapter(sqlStmnt, connection);
         }
+        protected override DbCommand CreateCommand(string sqlStmnt)
+        {
+            if (Connection == null) 
+                throw new NullReferenceException("Connection");
+            MySqlConnection connection = Connection as MySqlConnection;
+            if (connection == null)
+                throw new ArgumentOutOfRangeException("The class Connection is not a MySqlConnection");
+            return new MySqlCommand(sqlStmnt, connection);
+        }
     }
 }

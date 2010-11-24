@@ -58,6 +58,13 @@ namespace DCF.DataLayer
                 throw new InvalidCastException("Connecton must be of type OdbcConnection");
             return new OdbcDataAdapter(sqlStmnt, connection);
         }
+        protected override DbCommand CreateCommand(string sqlStmnt)
+        {
+            OdbcConnection connection = Connection as OdbcConnection;
+            if (connection == null)
+                throw new InvalidCastException("Connecton must be of type OdbcConnection");
+            return new OdbcCommand(sqlStmnt, connection);
+        }
 
         private const string ConnectionFormatString =
             "Driver={{MySQL ODBC 3.51 Driver}};Server=localhost;Database={0};User={1};pwd={2};Option=3";

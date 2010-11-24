@@ -104,6 +104,27 @@ namespace DCF.DataLayer
             }
         }
 
+        public void PopulateTableFromDB(DataTable dataTable)
+        {
+            using (new PerformanceCounter(SqlUtilsTimerName))
+            {
+                using (DbCommand dc = CreateCommand(string.Format(
+                    "select * from {0}", dataTable.TableName)))
+                {
+                    using (DbDataReader reader = dc.ExecuteReader())
+                    {
+                        dataTable.Rows.Clear();
+                        object[] rowValues = new object[dataTable.Columns.Count];
+                        while (reader.Read())
+                        {
+                            reader.GetValues(rowValues);
+                            dataTable.Rows.Add(rowValues);
+                        }
+                    }
+                }
+            }
+        }
+
         public int DropTableIfExists(string tableName)
         {
             return ExecuteNonQuery(string.Format("DROP TABLE IF EXISTS {0}", tableName));
@@ -134,7 +155,7 @@ namespace DCF.DataLayer
                     "select * from {0}", tbl.TableName)))
                 using (DbCommandBuilder cb = CreateCommandBuilder(da))
                 {
-                    da.UpdateBatchSize = 10;
+                    da.UpdateBatchSize = 500;
                     da.Update(tbl);
                 }
             }
@@ -160,7 +181,7 @@ namespace DCF.DataLayer
                         "select * from {0}", tbl.TableName)))
                     using (DbCommandBuilder cb = CreateCommandBuilder(da))
                     {
-                        da.UpdateBatchSize = 10;
+                        da.UpdateBatchSize = 500;
                         da.Update(tbl);
                     }
                 }
@@ -181,7 +202,7 @@ namespace DCF.DataLayer
                     "select * from {0}", tbl.TableName)))
                 using (DbCommandBuilder cb = CreateCommandBuilder(da))
                 {
-                    da.UpdateBatchSize = 10;
+                    da.UpdateBatchSize = 500;
                     da.Update(tbl);
                 }
             }
@@ -307,6 +328,7 @@ namespace DCF.DataLayer
         protected abstract DbCommandBuilder CreateCommandBuilder(DataAdapter da);
         protected abstract DbConnection CreateConnection(string connectionString);
         protected abstract DbDataAdapter CreateDataAdapter(string sqlStmnt);
+        protected abstract DbCommand CreateCommand(string sqlStmnt);
 
         #endregion Abstract Methods
 

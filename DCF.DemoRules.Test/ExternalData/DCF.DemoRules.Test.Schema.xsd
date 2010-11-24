@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" 
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           >
+  <xs:element name="Items" nillable="true" type="Items" />
+  <xs:complexType name="Items">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="ItemList" type="ArrayOfItemTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfItemTemplate">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ItemTemplate" nillable="true" type="ItemTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ItemTemplate">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="TopicName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="CorrectValues" type="ArrayOfString" />
+      <xs:element minOccurs="0" maxOccurs="1" name="IncorrectValues" type="ArrayOfString" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Topics" nillable="true" type="Topics" />
+  <xs:complexType name="Topics">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="TopicList" type="ArrayOfTopicTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfTopicTemplate">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="TopicTemplate" nillable="true" type="TopicTemplate" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TopicTemplate">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Text" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Type" type="TopicType" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Category" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="Values" type="ArrayOfString" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="TopicType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SingleAnswer" />
+      <xs:enumeration value="MultipleAnswers" />
+      <xs:enumeration value="MultipleChoiseAnswer" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ArrayOfString">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

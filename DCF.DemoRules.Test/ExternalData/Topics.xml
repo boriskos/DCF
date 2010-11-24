@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Topics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+        xsi:schemaLocation="'' DCF.DemoRules.Test.Schema.xsd">
+  <TopicList>
+    <TopicTemplate>
+      <Name>CountryOf{0}</Name>
+      <Text>What is a country of {0}?</Text>
+      <Type>SingleAnswer</Type>
+      <Category>CountryOf</Category>
+      <Values>
+        <string>Moscow</string>
+        <string>Tel Aviv</string>
+        <string>Jerusalem</string>
+        <string>Tokyo</string>
+        <string>New York</string>
+        <string>London</string>
+      </Values>
+    </TopicTemplate>
+    <TopicTemplate>
+      <Name>CapitalOf{0}</Name>
+      <Text>What is the capital of {0}?</Text>
+      <Type>SingleAnswer</Type>
+      <Category>CapitalOf</Category>
+      <Values>
+        <string>Russia</string>
+        <string>Israel</string>
+        <string>USA</string>
+        <string>Japan</string>
+        <string>France</string>
+        <string>England</string>
+      </Values>
+    </TopicTemplate>
+  </TopicList>
+</Topics>

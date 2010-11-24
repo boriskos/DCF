@@ -5,6 +5,12 @@ using System.Text;
 
 namespace DCF.DataLayer
 {
+    public enum TopicType
+    {
+        SingleAnswer = 0,
+        MultipleAnswers = 1,
+        MultipleChoiseAnswer = 2
+    }
     public static class TableConstants
     {
         public const string UserScores = "userscores";

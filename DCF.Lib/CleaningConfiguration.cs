@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Wintellect.PowerCollections;
 using DCF.Common;
-using DCF.Lib.Configuration;
 using System.Configuration;
 
 namespace DCF.Lib
@@ -123,19 +122,6 @@ namespace DCF.Lib
                         break;
                 }
             }
-            InitSection initSection = ConfigurationManager.GetSection("InitSection") as InitSection;
-            if (initSection == null)
-            {
-                Logger.TraceWriteLine("InitSection is not found in app config file");
-                throw new SystemException("InitSection is not found in app config file"); // terminate
-            }
-            CleaningConfiguration.CorrectFactsRatio = initSection.CorrectFactsRatio;
-            CleaningConfiguration.NumberOfFacts = initSection.NumberOfFacts;
-            CleaningConfiguration.NumberOfIncorrectFactsInUse = initSection.NumberOfIncorrectFactsInUse;
-            CleaningConfiguration.NumberOfCountriesWithRestrictedIncorrectFactsCount =
-                initSection.NumberOfCountriesWithRestrictedIncorrectFactsCount;
-            CleaningConfiguration.GenerateMayors = initSection.GenerateMayors;
-            CleaningConfiguration.setUserProfiles(initSection.UserProfiles);
         }
 
         private const string NoInitSettingName = "NoDbInit";

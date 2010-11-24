@@ -5,9 +5,178 @@ using System.Text;
 using System.Configuration;
 using System.Globalization;
 using Wintellect.PowerCollections;
+using DCF.Common;
 
-namespace DCF.Lib.Configuration
+namespace DCF.DemoRules.Test
 {
+
+
+    public class InitSection: ConfigurationSection
+    {
+        public InitSection()
+        {
+        }
+
+        [ConfigurationProperty("NumberOfFacts",
+            DefaultValue=(long)1000,
+            IsRequired=true)]
+        [LongValidator(MinValue=10, MaxValue=10000000, ExcludeRange=false)]
+        public long NumberOfFacts
+        {
+            get
+            {
+                return (long)this["NumberOfFacts"];
+            }
+            set
+            {
+                this["NumberOfFacts"] = value;
+            }
+
+        }
+
+        [ConfigurationProperty("NumberOfCountriesWithRestrictedIncorrectFactsCount",
+            DefaultValue = (int)0,
+            IsRequired = false)]
+        public int NumberOfCountriesWithRestrictedIncorrectFactsCount
+        {
+            get
+            {
+                return (int)this["NumberOfCountriesWithRestrictedIncorrectFactsCount"];
+            }
+            set
+            {
+                this["NumberOfCountriesWithRestrictedIncorrectFactsCount"] = value;
+            }
+
+        }
+
+        [ConfigurationProperty("NumberOfIncorrectFactsInUse",
+            DefaultValue = (int)0,
+            IsRequired = false)]
+        public int NumberOfIncorrectFactsInUse
+        {
+            get
+            {
+                return (int)this["NumberOfIncorrectFactsInUse"];
+            }
+            set
+            {
+                this["NumberOfIncorrectFactsInUse"] = value;
+            }
+
+        }
+
+        [ConfigurationProperty("GenerateBasisTables",
+            DefaultValue = false,
+            IsRequired = false)]
+        public bool GenerateBasisTables
+        {
+            get
+            {
+                return (bool)this["GenerateBasisTables"];
+            }
+            set
+            {
+                this["GenerateBasisTables"] = value;
+            }
+
+        }
+
+        [ConfigurationProperty("UserProfiles")]
+        public string UserProfiles
+        {
+            get
+            {
+                return (string)this["UserProfiles"];
+            }
+            set
+            {
+                this["UserProfiles"] = value;
+            }
+        }
+
+        [ConfigurationProperty("ItemsDefinitionFile", 
+            DefaultValue=null,
+            IsRequired=false)]
+        public string ItemsDefinitionFile
+        {
+            get
+            {
+                return (string)this["ItemsDefinitionFile"];
+            }
+            set
+            {
+                this["ItemsDefinitionFile"] = value;
+            }
+        }
+
+        [ConfigurationProperty("TopicsDefinitionFile",
+            DefaultValue = null,
+            IsRequired = false)]
+        public string TopicsDefinitionFile
+        {
+            get
+            {
+                return (string)this["TopicsDefinitionFile"];
+            }
+            set
+            {
+                this["TopicsDefinitionFile"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Uses <see cref="Logger"/> class to trace the current state
+        /// </summary>
+        public void TraceContents()
+        {
+            Logger.TraceWriteLine(string.Format("NumberOfFacts: {0}", NumberOfFacts));
+            Logger.TraceWriteLine(string.Format("NumberOfCountriesWithRestrictedIncorrectFactsCount: {0}", 
+                NumberOfCountriesWithRestrictedIncorrectFactsCount));
+            Logger.TraceWriteLine(string.Format("NumberOfIncorrectFactsInUse: {0}", NumberOfIncorrectFactsInUse));
+            Logger.TraceWriteLine(string.Format("GenerateBasisTables: {0}", GenerateBasisTables));
+            if (TopicsDefinitionFile != null)
+                Logger.TraceWriteLine(string.Format("TopicsDefinitionFile: {0}", TopicsDefinitionFile));
+            if (ItemsDefinitionFile != null)
+                Logger.TraceWriteLine(string.Format("ItemsDefinitionFile: {0}", ItemsDefinitionFile));
+            // report UserProfiles
+            List<Pair<double, double>> usersProfilesPortionBelief = getUserProfiles();
+            if (usersProfilesPortionBelief.Count > 0)
+            {
+                Logger.TraceWriteLine("Current user profiles:");
+                Logger.TraceIndent();
+                foreach (var line in usersProfilesPortionBelief)
+                {
+                    Logger.TraceWriteLine(string.Format("{0} percent have probability of {1}", line.First*100, line.Second));
+                }
+                Logger.TraceUnindent();
+            }
+        }
+
+        /// <summary>
+        /// returns the user profiles as list of pairs : user percent, probability of the user to provde with correct answer
+        /// </summary>
+        /// <returns></returns>
+        public List<Pair<double, double>> getUserProfiles()
+        {
+            List<Pair<double, double>> usersProfilesPortionBelief = new List<Pair<double, double>>();
+            if (UserProfiles == null)
+            {
+                throw new ConfigurationErrorsException("User Profiles is not provided");
+            }
+            char[] separators = { '(', ')' };
+            string[] usersStr = UserProfiles.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string pair in usersStr)
+            {
+                string[] profileEntitiesStr = pair.Split(',');
+                usersProfilesPortionBelief.Add(new Pair<double, double>(
+                    double.Parse(profileEntitiesStr[0]),
+                    double.Parse(profileEntitiesStr[1])));
+            }
+            return usersProfilesPortionBelief;
+        }
+
+    }
 
     public class DoubleValidator : ConfigurationValidatorBase
     {
@@ -128,109 +297,6 @@ namespace DCF.Lib.Configuration
         }
     }
 
-
-
-    public class InitSection: ConfigurationSection
-    {
-        public InitSection()
-        {
-            //m_numOfFacts = new InitSectionElement();
-            //m_correctFactsRatio = new InitSectionElement();
-        }
-
-        [ConfigurationProperty("NumberOfFacts",
-            DefaultValue=(long)1000,
-            IsRequired=true)]
-        [LongValidator(MinValue=10, MaxValue=10000000, ExcludeRange=false)]
-        public long NumberOfFacts
-        {
-            get
-            {
-                return (long)this["NumberOfFacts"];
-            }
-            set
-            {
-                this["NumberOfFacts"] = value;
-            }
-
-        }
-
-        [ConfigurationProperty("CorrectFactsRatio",
-            DefaultValue=(double)0.9, IsRequired=true)]
-        [DoubleValidator(MinValue=0.0, MaxValue=1.0, ExcludeRange=false)]
-        public double CorrectFactsRatio
-        {
-            get
-            {
-                return (double)this["CorrectFactsRatio"];
-            }
-            set
-            {
-                this["CorrectFactsRatio"] = value;
-            }
-        }
-        [ConfigurationProperty("NumberOfCountriesWithRestrictedIncorrectFactsCount",
-            DefaultValue = (int)0,
-            IsRequired = false)]
-        public int NumberOfCountriesWithRestrictedIncorrectFactsCount
-        {
-            get
-            {
-                return (int)this["NumberOfCountriesWithRestrictedIncorrectFactsCount"];
-            }
-            set
-            {
-                this["NumberOfCountriesWithRestrictedIncorrectFactsCount"] = value;
-            }
-
-        }
-        [ConfigurationProperty("NumberOfIncorrectFactsInUse",
-            DefaultValue = (int)0,
-            IsRequired = false)]
-        public int NumberOfIncorrectFactsInUse
-        {
-            get
-            {
-                return (int)this["NumberOfIncorrectFactsInUse"];
-            }
-            set
-            {
-                this["NumberOfIncorrectFactsInUse"] = value;
-            }
-
-        }
-
-        [ConfigurationProperty("GenerateMayors",
-            DefaultValue = false,
-            IsRequired = false)]
-        public bool GenerateMayors
-        {
-            get
-            {
-                return (bool)this["GenerateMayors"];
-            }
-            set
-            {
-                this["GenerateMayors"] = value;
-            }
-
-        }
-
-        [ConfigurationProperty("UserProfiles")]
-        public string UserProfiles
-        {
-            get
-            {
-                return (string)this["UserProfiles"];
-            }
-            set
-            {
-                this["UserProfiles"] = value;
-            }
-        }
-
-
-    }
 
     internal static class ValidatorUtils
     {

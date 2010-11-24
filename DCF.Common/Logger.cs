@@ -19,6 +19,8 @@ namespace DCF.Common
 
         #region Static Public Properties
         public static TraceListenerCollection LoggerEventsListeners { get { return ts.Listeners; } }
+        public static TraceListenerCollection LoggerTraceListeners { get { return Trace.Listeners; } }
+        public static TraceListenerCollection LoggerDebugListeners { get { return Debug.Listeners; } }
 
         public static bool ShowSQLs
         {
@@ -151,7 +153,7 @@ namespace DCF.Common
 
         public static void Assert(bool cond, string str)
         {
-            Trace.Assert(cond, str);
+            Debug.Assert(cond, str);
         } 
         #endregion
 

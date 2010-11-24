@@ -58,7 +58,6 @@
     <Compile Include="CleaningConfiguration.cs" />
     <Compile Include="CleansingManager.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="InitSection.cs" />
     <Compile Include="IRuleSupplier.cs" />
     <Compile Include="ProbabilityExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

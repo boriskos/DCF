@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DCF.DataLayer;
 
 namespace DCF.DemoRules.Test
 {
@@ -11,6 +12,7 @@ namespace DCF.DemoRules.Test
     {
         public string Name { get; set; }
         public string Text { get; set; }
+        public TopicType Type { get; set; }
         public string Category { get; set; }
         public List<string> Values { get; set; }
     }
