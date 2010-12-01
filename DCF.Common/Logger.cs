@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.Configuration;
 
 namespace DCF.Common
 {
@@ -28,8 +28,8 @@ namespace DCF.Common
             {
                 if (m_sShowSql == null)
                 {
-                    m_sShowSql = ConfigurationSettings.AppSettings["ShowSQL"] != null &&
-                        ConfigurationSettings.AppSettings["ShowSQL"].Equals(bool.TrueString, StringComparison.InvariantCultureIgnoreCase);
+                    m_sShowSql = ConfigurationManager.AppSettings["ShowSQL"] != null &&
+                        ConfigurationManager.AppSettings["ShowSQL"].Equals(bool.TrueString, StringComparison.InvariantCultureIgnoreCase);
                 }
                 return m_sShowSql.Value;
             }
@@ -41,8 +41,8 @@ namespace DCF.Common
             {
                 if (m_sShowTableContents == null)
                 {
-                    m_sShowTableContents = ConfigurationSettings.AppSettings["ShowTableContents"] != null &&
-                        ConfigurationSettings.AppSettings["ShowTableContents"].Equals(bool.TrueString, StringComparison.InvariantCultureIgnoreCase);
+                    m_sShowTableContents = ConfigurationManager.AppSettings["ShowTableContents"] != null &&
+                        ConfigurationManager.AppSettings["ShowTableContents"].Equals(bool.TrueString, StringComparison.InvariantCultureIgnoreCase);
                 }
                 return m_sShowTableContents.Value;
             }

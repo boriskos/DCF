@@ -16,6 +16,7 @@ namespace DCF.QuestionAnswering
         public const string UsernameSettingName = "DBUserName";
         public const string PasswordSettingName = "DBUserName";
         public const string DbNameSettingName = "DBName";
+        public const string HostNameSettingName = "HostName";
         public MainFormMySql()
         {
             InitializeComponent();
@@ -25,8 +26,8 @@ namespace DCF.QuestionAnswering
         {
             using (LoginForm lf = new LoginForm())
             {
-                lf.UserName = ConfigurationSettings.AppSettings[UsernameSettingName];
-                lf.Password = ConfigurationSettings.AppSettings[PasswordSettingName];
+                lf.UserName = ConfigurationManager.AppSettings[UsernameSettingName];
+                lf.Password = ConfigurationManager.AppSettings[PasswordSettingName];
                 DialogResult dr = lf.ShowDialog(this);
                 if (dr == DialogResult.Cancel)
                 {
@@ -34,8 +35,9 @@ namespace DCF.QuestionAnswering
                 }
                 string password = lf.Password;
                 string username = lf.UserName;
-                m_sqlUtils = new MySqlNativeClientUtils(username, password, 
-                    ConfigurationSettings.AppSettings[DbNameSettingName]);
+                m_sqlUtils = new MySqlNativeClientUtils(username, password,
+                    ConfigurationManager.AppSettings[DbNameSettingName], 
+                    ConfigurationManager.AppSettings[HostNameSettingName]);
             }
             SqlUtils.Connect();
 

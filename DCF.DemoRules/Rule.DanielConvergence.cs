@@ -27,28 +27,9 @@ namespace DCF.DemoRules
 
 
             // initialize the threshold
-            string convDeltaStr = ConfigurationSettings.AppSettings["ConversionDelta"];
-            double convDelta = 0.0;
-            if (string.IsNullOrEmpty(convDeltaStr) || !double.TryParse(convDeltaStr, out convDelta))
-            {
-                m_ConvergenceThreshold = 0.05;
-            }
-            else
-            {
-                m_ConvergenceThreshold = convDelta;
-            }
- 
+            m_ConvergenceThreshold = CleaningConfiguration.Instance.ConversionDelta;
             // initialize convergence count - number of good samples in a row that need to be good in order to decide converence
-            string convCountStr = ConfigurationSettings.AppSettings["ConversionSamplesCount"];
-            int convCount;
-            if (string.IsNullOrEmpty(convCountStr) || !int.TryParse(convCountStr, out convCount))
-            {
-                m_ConvergenceSamplesCount = 10;
-            }
-            else
-            {
-                m_ConvergenceSamplesCount = convCount;
-            }
+            m_ConvergenceSamplesCount = CleaningConfiguration.Instance.ConversionSamplesCount;
 
         }
 
@@ -103,7 +84,7 @@ namespace DCF.DemoRules
                             curIteration, curIteration - m_ConvergenceSamplesCount, userDif, maxUserScore, minUserScore));
 
                         nonConvergedUsersCount += 1.0;
-                        if (nonConvergedUsersCount / usersCount > CleaningConfiguration.ConversionTolerance)
+                        if (nonConvergedUsersCount / usersCount > CleaningConfiguration.Instance.ConversionTolerance)
                         {
                             uncoverged = true;
                             break;

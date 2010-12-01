@@ -21,6 +21,7 @@ namespace DCF.DemoRules.Test
             DBName = ConfigurationManager.AppSettings["DBName"];
             DBUsername = ConfigurationManager.AppSettings["DBUserName"];
             DBPassword = ConfigurationManager.AppSettings["DBPassword"];
+            HostName = ConfigurationManager.AppSettings["HostName"];
 
             m_initSection = ConfigurationManager.GetSection("InitSection") as InitSection;
             if (m_initSection == null)
@@ -71,6 +72,10 @@ namespace DCF.DemoRules.Test
                     {
                         DBUsername = arg.Split('=')[1];
                     }
+                    else if (arg.StartsWith(ArgName("HostName"), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        HostName = arg.Split('=')[1];
+                    }
                     else
                     {
                         Logger.TraceWriteLine(string.Format("Unknown command line parameter: {0}", arg));
@@ -92,7 +97,7 @@ namespace DCF.DemoRules.Test
         /// </summary>
         public void InitFlow()
         {
-            m_sqlUtils = new MySqlNativeClientUtils(DBUsername, DBPassword, DBName);
+            m_sqlUtils = new MySqlNativeClientUtils(DBUsername, DBPassword, DBName, HostName);
             SqlUtils.Connect();
             Logger.TraceWriteLine(string.Format("Connected to {0}/{1}@{2}", DBUsername, DBPassword, DBName));
             m_testDataGenerator = new TestDataGenerator(m_initSection);
@@ -189,6 +194,7 @@ namespace DCF.DemoRules.Test
         public  string DBUsername { get; private set; }
         public string DBPassword { get; private set; }
         public string DBName { get; private set; }
+        public string HostName { get; private set; }
 
         public MySqlUtils SqlUtils { get { return m_sqlUtils; } }
 

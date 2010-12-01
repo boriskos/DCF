@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseCleaningManager.cs" />
     <Compile Include="InitSection.cs" />
     <Compile Include="ItemTemplate.cs" />
     <Compile Include="Program.cs" />
@@ -64,9 +65,21 @@
       <Project>{8A782AC0-E6C7-40DF-879B-71C2024DFCC1}</Project>
       <Name>DCF.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DCF.DataLayerAwareLib\DCF.DataLayerAwareLib.csproj">
+      <Project>{8EF86018-D0F0-4977-A82D-292EF2B9B494}</Project>
+      <Name>DCF.DataLayerAwareLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DCF.DataLayer\DCF.DataLayer.csproj">
       <Project>{6F03B9FC-870E-4A30-9AC7-5D4CC5997860}</Project>
       <Name>DCF.DataLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.DemoRules\DCF.DemoRules.csproj">
+      <Project>{A3AFF289-DDCC-447B-949E-2A7B78F9EC34}</Project>
+      <Name>DCF.DemoRules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.Lib\DCF.Lib.csproj">
+      <Project>{909A8C0C-BE2A-4BF8-A105-6E8706E7ADFF}</Project>
+      <Name>DCF.Lib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -12,8 +12,8 @@ namespace DCF.DataLayer
     public class MySqlOdbcUtils: MySqlUtils
     {
 
-        public MySqlOdbcUtils(string userName, string passwd, string dbName) :
-            base(userName, passwd, dbName)
+        public MySqlOdbcUtils(string userName, string passwd, string dbName, string hostName) :
+            base(userName, passwd, dbName, hostName)
         {
         }
 

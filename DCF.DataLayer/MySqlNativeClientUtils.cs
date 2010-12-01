@@ -11,8 +11,8 @@ namespace DCF.DataLayer
     public class MySqlNativeClientUtils: MySqlUtils
     {
 
-        public MySqlNativeClientUtils(string userName, string passwd, string dbName) :
-            base(userName, passwd, dbName)
+        public MySqlNativeClientUtils(string userName, string passwd, string dbName, string hostName) :
+            base(userName, passwd, dbName, hostName)
         {
         }
 
@@ -26,8 +26,8 @@ namespace DCF.DataLayer
             get 
             { 
                 return string.Format(
-                    "Data Source=localhost;Initial Catalog={0};User Id={1};Password={2};default command timeout=600",
-                    this.DbName, this.UserName, this.Password); 
+                    "Data Source={3};Initial Catalog={0};User Id={1};Password={2};default command timeout=600",
+                    this.DbName, this.UserName, this.Password, this.HostName); 
             }
         }
 

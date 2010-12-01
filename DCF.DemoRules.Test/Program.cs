@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.IO;
 using DCF.Common;
 using System.Diagnostics;
+using DCF.DataLayerAwareLib;
 
 namespace DCF.DemoRules.Test
 {
@@ -27,20 +28,77 @@ namespace DCF.DemoRules.Test
             }
             else
             {
+                DateTime startTime = DateTime.Now;
+                Logger.TraceWriteLine(string.Format("Starting the Rule Generation at {0}", startTime.ToLongTimeString()));
                 switch (args[0])
                 {
                     case "generate":
-                        GenerateRules(args);
+                        if (!GenerateRules(args))
+                        {
+                            Usage();
+                        }
+                        break;
+                    case "clean":
+                        if (!CleanDatabase(args))
+                        {
+                            Usage();
+                        }
                         break;
                     default:
                         Usage();
                         break;
                 }
+                DateTime endTime = DateTime.Now;
+                Logger.TraceWriteLine(string.Format("Finishing the Rule Generation at {0}. Total runtime is {1} sec",
+                    endTime.ToLongTimeString(), (endTime - startTime).TotalSeconds));
             }
         }
 
+        private static bool CleanDatabase(string[] args)
+        {
+            bool res = true;
+            try
+            {
+                // parse arguments and App.config file
+                DatabaseCleaningManager dcm = new DatabaseCleaningManager();
+                dcm.ParseArgs(args.Skip(1).ToArray() );
+                dcm.InitFlow();
+                // call the flow manager according to parameters
+                dcm.DoTestFlow();
+                // done
+                dcm.FinishFlow();
+            }
+            catch (Exception ex)
+            {
+                Logger.TraceWriteLine(string.Format("Unhandled exception {0}; Trace {1}", ex.Message, ex.StackTrace));
+                res = false;
+            }
+            return res;
+        }
 
-        private static void Usage()
+        private static bool GenerateRules(string[] args)
+        {
+            bool res = true;
+            try
+            {
+                // parse arguments and App.config file
+                TestDataGenerationManager tdgm = new TestDataGenerationManager();
+                tdgm.ParseArgs(args.Skip(1).ToArray());
+                tdgm.InitFlow();
+                // call the flow manager according to parameters
+                tdgm.DoTestFlow();
+                // done
+                tdgm.FinishFlow();
+            }
+            catch (Exception ex)
+            {
+                Logger.TraceWriteLine(string.Format("Unhandled exception {0}; Trace {1}", ex.Message, ex.StackTrace));
+                res = false;
+            }
+            return res;
+        }
+
+        public static void Usage()
         {
             Logger.TraceWriteLine(string.Format("Usage: {0} <operation> <options>", Process.GetCurrentProcess().MainModule.ModuleName));
             Logger.TraceWriteLine("Where <operation> can be:");
@@ -60,28 +118,5 @@ namespace DCF.DemoRules.Test
             Logger.TraceUnindent();
         }
 
-        private static void GenerateRules(string[] args)
-        {
-            DateTime startTime = DateTime.Now;
-            Logger.TraceWriteLine(string.Format("Starting the Rule Generation at {0}", startTime.ToLongTimeString()));
-            try
-            {
-                // parse arguments and App.config file
-                TestDataGenerationManager tdgm = new TestDataGenerationManager();
-                tdgm.ParseArgs(args);
-                tdgm.InitFlow();
-                // call the flow manager according to parameters
-                tdgm.DoTestFlow();
-                // done
-                tdgm.FinishFlow();
-            }
-            catch (Exception ex)
-            {
-                Logger.TraceWriteLine(string.Format("Unhandled exception {0}; Trace {1}", ex.Message, ex.StackTrace));
-            }
-            DateTime endTime = DateTime.Now;
-            Logger.TraceWriteLine(string.Format("Finishing the Rule Generation at {0}. Total runtime is {1} sec",
-                endTime.ToLongTimeString(), (endTime - startTime).TotalSeconds));
-        }
     }
 }

@@ -30,18 +30,18 @@ namespace TestDFC
                 return false;
             }
 
-            if (m_cleaningRule.CurIteration != CleaningConfiguration.MaxSampleIterations)
+            if (m_cleaningRule.CurIteration != CleaningConfiguration.Instance.MaxSampleIterations)
             {
                 Logger.TraceWriteLine(string.Format(
-                    "Cleaning rules were called {0} times out of {1} sample iterations", 
-                    m_cleaningRule.CurIteration, CleaningConfiguration.MaxSampleIterations));
+                    "Cleaning rules were called {0} times out of {1} sample iterations",
+                    m_cleaningRule.CurIteration, CleaningConfiguration.Instance.MaxSampleIterations));
                 return false;
             }
-            if (m_sampleRule.CurIteration != CleaningConfiguration.MaxSampleIterations)
+            if (m_sampleRule.CurIteration != CleaningConfiguration.Instance.MaxSampleIterations)
             {
                 Logger.TraceWriteLine(string.Format(
                     "Sample rules were called {0} times out of {1} sample iterations",
-                    m_sampleRule.CurIteration, CleaningConfiguration.MaxSampleIterations));
+                    m_sampleRule.CurIteration, CleaningConfiguration.Instance.MaxSampleIterations));
                 return false;
             }
             return true;

@@ -16,31 +16,9 @@ namespace DCF.Lib
         {
             m_ruleSupplier = ruleSupplier;
         }
-        public void cleanDataSample(IEnumerable<string> involvedTableNames)
-        {
-            using (new PerformanceCounter("CleansingManager.cleanData"))
-            {
-                for (int i = 0; 
-                    i < CleaningConfiguration.MaxCleaningIterationsPerSample && !m_dataIsClean && !m_stopSampling; 
-                    i++)
-                {
-                    Logger.DebugWriteLine(string.Format("Cleaning iteration {0}", i), Logger.CleaningDataStr); 
-                    IEnumerable<Rule> rules = SelectRules(involvedTableNames);
-
-                    Logger.DebugWriteLine("Selected rules:", Logger.CleaningDataStr);
-                    Logger.DebugIndent();
-                    foreach (var rule in rules) Logger.DebugWriteLine(rule.Id);;
-                    Logger.DebugUnindent();
-
-                    ApplyRules(rules);
-                    Logger.DebugWriteLine(""); 
-                }
-                CompleteCleaningCycle(m_dataIsClean, involvedTableNames);
-            }
-        }
         public void cleanData(IEnumerable<string> involvedTableNames)
         {
-            for (int i = 0; i < CleaningConfiguration.MaxSampleIterations && !m_stopSampling; i++)
+            for (int i = 0; i < CleaningConfiguration.Instance.MaxSampleIterations && !m_stopSampling; i++)
             {
                 CurrentIteration = i;
                 Logger.DebugWriteLine("Sample " + i.ToString(), Logger.CleaningDataStr);
@@ -53,17 +31,48 @@ namespace DCF.Lib
         public int CurrentIteration { get; private set; }
 
         #region Protected Methods
+        protected void cleanDataSample(IEnumerable<string> involvedTableNames)
+        {
+            using (new PerformanceCounter("CleansingManager.cleanData"))
+            {
+                for (int i = 0;
+                    i < CleaningConfiguration.Instance.MaxCleaningIterationsPerSample && !m_dataIsClean && !m_stopSampling;
+                    i++)
+                {
+                    Logger.DebugWriteLine(string.Format("Cleaning iteration {0}", i), Logger.CleaningDataStr);
+                    IEnumerable<Rule> rules = SelectRules(involvedTableNames);
+                    if (rules == null)
+                    {
+                        Logger.DebugWriteLine("Selected no rules!", Logger.CleaningDataStr);
+                        break;
+                    }
+
+                    Logger.DebugWriteLine("Selected rules:", Logger.CleaningDataStr);
+                    Logger.DebugIndent();
+                    foreach (var rule in rules) Logger.DebugWriteLine(rule.Id); ;
+                    Logger.DebugUnindent();
+
+                    ApplyRules(rules);
+                    Logger.DebugWriteLine("");
+                }
+                CompleteCleaningCycle(m_dataIsClean, involvedTableNames);
+            }
+        }
+
         protected IEnumerable<Rule> SelectRules(IEnumerable<string> involvedTableNames)
         {
             if (m_cleaningRulesList == null)
             {
                 m_cleaningRulesList = m_ruleSupplier.GetCleaningRules();
 
-                foreach (Rule rule in m_cleaningRulesList)
+                if (m_cleaningRulesList != null)
                 {
-                    rule.StopCleaningProcess += new EventHandler(SetStopSamping);
-                    rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
-                    rule.init(null);
+                    foreach (Rule rule in m_cleaningRulesList)
+                    {
+                        rule.StopCleaningProcess += new EventHandler(SetStopSamping);
+                        rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
+                        rule.init(null);
+                    }
                 }
             }
             return m_cleaningRulesList;
@@ -92,7 +101,10 @@ namespace DCF.Lib
                 Dictionary<string, object> data = new Dictionary<string, object>();
                 m_dataIsClean = false;
                 IEnumerable<Rule> rules = SelectRulesForCompletion(involvedTableNames);
-                ApplyRules(rules);
+                if (rules != null)
+                {
+                    ApplyRules(rules);
+                }
             }
         }
 
@@ -101,11 +113,14 @@ namespace DCF.Lib
             if (m_samplingRulesList == null)
             {
                 m_samplingRulesList = m_ruleSupplier.GetSampleRules();
-                foreach (Rule rule in m_samplingRulesList)
+                if (m_samplingRulesList != null)
                 {
-                    rule.StopCleaningProcess += new EventHandler(SetStopSamping);
-                    rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
-                    rule.init(null);
+                    foreach (Rule rule in m_samplingRulesList)
+                    {
+                        rule.StopCleaningProcess += new EventHandler(SetStopSamping);
+                        rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
+                        rule.init(null);
+                    }
                 }
             }
 

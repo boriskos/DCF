@@ -42,7 +42,7 @@ namespace TestDFC
 
         private static List<ITestRuleSupplier> InitTest()
         {
-            CleaningConfiguration.PopulateFromAppConfig();
+            CleaningConfiguration.Instance.PopulateFromAppConfig();
 
             Logger.TraceWriteLine("Tests with TestMaxIterationSupplier");
             List<ITestRuleSupplier> list = new List<ITestRuleSupplier>();

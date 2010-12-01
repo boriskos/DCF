@@ -5,152 +5,116 @@ using System.Text;
 using Wintellect.PowerCollections;
 using DCF.Common;
 using System.Configuration;
+using System.Reflection;
 
 namespace DCF.Lib
 {
     /// <summary>
     /// Keeps the configuraiton of the engine
     /// </summary>
-    public static class CleaningConfiguration
+    public class CleaningConfiguration
     {
-        /// <summary>
-        /// Only initiate DB on true, otherwise run rules
-        /// </summary>
-        public static bool DbInitOnly;
-        /// <summary>
-        /// If to avoid DB initiallization, otherwise initiallize
-        /// </summary>
-        public static bool NoDbInit;
         /// <summary>
         /// Max number of iterations 
         /// </summary>
-        public static int MaxSampleIterations;
-        public static int MaxCleaningIterationsPerSample=1;
-        public static double ConversionDelta;
-        public static int ConversionSamplesCount;
-        public static double ConversionAlfa;
-        public static double ConversionTolerance;
+        public int MaxSampleIterations {get; private set;}
+        public int MaxCleaningIterationsPerSample { get; private set; }
+        public double ConversionDelta { get; private set; }
+        public int ConversionSamplesCount { get; private set; }
+        public double ConversionAlfa { get; private set; }
+        public double ConversionTolerance { get; private set; }
 
-        public static int ExperimentType;
+        public int ExperimentType { get; private set; }
 
-        public static long NumberOfFacts;
-        public static double CorrectFactsRatio;
-        public static int NumberOfIncorrectFactsInUse;
-        public static int NumberOfCountriesWithRestrictedIncorrectFactsCount;
-        public static bool GenerateMayors;
-
-        public static List<Pair<double, double>> UsersProfilesPortionBelief = new List<Pair<double,double>>();
-
-        public static void setUserProfiles(string usersProfilesStr)
+        public void TraceCurrentConfiguration()
         {
-            UsersProfilesPortionBelief.Clear();
-            char[] separators = { '(', ')' };
-            string[] usersStr = usersProfilesStr.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string pair in usersStr)
+            foreach (PropertyInfo pi in typeof(CleaningConfiguration).GetProperties())
             {
-                string[] profileEntitiesStr = pair.Split(',');
-                UsersProfilesPortionBelief.Add(new Pair<double, double>(
-                    double.Parse(profileEntitiesStr[0]),
-                    double.Parse(profileEntitiesStr[1])));
+                if (pi.Name == "Item" || pi.Name == "Instance") continue;
+                Logger.TraceWriteLine(string.Format("{0}={1}", pi.Name, pi.GetValue(this, null)));
             }
         }
 
-        public static void TraceCurrentConfiguration()
-        {
-            Logger.TraceWriteLine(string.Format("DbInitOnly={0}", DbInitOnly));
-            Logger.TraceWriteLine(string.Format("NoDbInit={0}", NoDbInit));
-            Logger.TraceWriteLine(string.Format("MaxSampleIterations={0}", MaxSampleIterations));
-            Logger.TraceWriteLine(string.Format("ConversionDelta={0}", ConversionDelta));
-            Logger.TraceWriteLine(string.Format("ConversionSamplesCount={0}", ConversionSamplesCount));
-            Logger.TraceWriteLine(string.Format("ConversionAlfa={0}", ConversionAlfa));
-            Logger.TraceWriteLine(string.Format("ConversionTolerance={0}", ConversionTolerance));
-
-            Logger.TraceWriteLine(string.Format("ExperimentType={0}", ExperimentType));
-            Logger.TraceWriteLine(string.Format("NumberOfFacts={0}", NumberOfFacts));
-            Logger.TraceWriteLine(string.Format("CorrectFactsRatio={0}", CorrectFactsRatio));
-            Logger.TraceWriteLine(string.Format("NumberOfIncorrectFactsInUse={0}", NumberOfIncorrectFactsInUse));
-            Logger.TraceWriteLine(string.Format("NumberOfCountriesWithRestrictedIncorrectFactsCount={0}", 
-                NumberOfCountriesWithRestrictedIncorrectFactsCount));
-            Logger.TraceWriteLine(string.Format("GenerateMayors={0}", GenerateMayors));
-
-            if (UsersProfilesPortionBelief.Count > 0)
-            {
-                Logger.TraceWriteLine("Current user profiles:");
-                Logger.TraceIndent();
-                foreach (var line in UsersProfilesPortionBelief)
-                {
-                    Logger.TraceWriteLine(string.Format("{0} percent have probability of {1}", line.First, line.Second));
-                }
-                Logger.TraceUnindent();
-            }
-        }
-        public static void PopulateFromAppConfig()
+        public void PopulateFromAppConfig()
         {
             // apply settings
             foreach (string sName in SettingNames)
             {
-                string setting = ConfigurationSettings.AppSettings[sName];
-                if (string.IsNullOrEmpty(setting)) continue;
-                switch (sName)
-                {
-                    case NoInitSettingName:
-                        CleaningConfiguration.NoDbInit = bool.Parse(setting);
-                        break;
-                    case DbInitOnlySettingName:
-                        CleaningConfiguration.DbInitOnly = bool.Parse(setting);
-                        break;
-                    case MaxSampleIterationsName:
-                        CleaningConfiguration.MaxSampleIterations = int.Parse(setting);
-                        break;
-                    case ConversionDeltaName:
-                        CleaningConfiguration.ConversionDelta = double.Parse(setting);
-                        break;
-                    case ConversionAlfaName:
-                        CleaningConfiguration.ConversionAlfa = double.Parse(setting);
-                        break;
-                    case ConversionToleranceName:
-                        CleaningConfiguration.ConversionTolerance = double.Parse(setting);
-                        break;
-                    case ConversionSamplesCountName:
-                        CleaningConfiguration.ConversionSamplesCount = int.Parse(setting);
-                        break;
-                    case ExperimentName:
-                        CleaningConfiguration.ExperimentType = int.Parse(setting);
-                        break;
-                    default:
-                        Logger.TraceWriteLine(string.Format("Error: Unknown parameter: {0}", sName));
-                        break;
-                }
+                string setting = ConfigurationManager.AppSettings[sName];
+                this[sName] = setting;
             }
         }
 
-        private const string NoInitSettingName = "NoDbInit";
-        private const string DbInitOnlySettingName = "DbInitOnly";
+        public object this[string settingName]
+        {
+            set
+            {
+                PropertyInfo pi = typeof(CleaningConfiguration).GetProperty(settingName);
+                if (pi == null)
+                    throw new ArgumentOutOfRangeException(string.Format("Error: Unknown parameter: {0}", settingName));
+                pi.SetValue(this, pi.PropertyType.GetMethod("Parse", m_sTypeOfString).Invoke(null, new object[] { value.ToString() }), null);
+            }
+            get
+            {
+                PropertyInfo pi = typeof(CleaningConfiguration).GetProperty(settingName);
+                if (pi == null)
+                    throw new ArgumentOutOfRangeException(string.Format("Error: Unknown parameter: {0}", settingName));
+                return pi.GetValue(this, null);
+            }
+        }
+
         private const string ConversionSamplesCountName = "ConversionSamplesCount";
         private const string ConversionDeltaName = "ConversionDelta";
         private const string ConversionAlfaName = "ConversionAlfa";
         private const string ConversionToleranceName = "ConversionTolerance";
         private const string MaxSampleIterationsName = "MaxSampleIterations";
-        private const string InitSectionName = "InitSection";
-        private const string ExperimentName = "Experiment";
-        private const string NumberOfIncorrectFactsInUseName = "NumberOfIncorrectFactsInUse";
-        private const string NumberOfCountriesWithRestrictedIncorrectFactsCountName =
-            "NumberOfCountriesWithRestrictedIncorrectFactsCount";
-        private const string GenerateMayorsName = "GenerateMayors";
+        private const string MaxCleaningIterationsPerSampleName = "MaxCleaningIterationsPerSample";
+        private const string ExperimentName = "ExperimentType";
 
-        private static string[] SettingNames = {
-                                                   NoInitSettingName, 
-                                                   DbInitOnlySettingName, 
+        public static string[] SettingNames = {
                                                    ConversionSamplesCountName, 
                                                    ConversionDeltaName, 
                                                    ConversionAlfaName,
                                                    ConversionToleranceName,
                                                    MaxSampleIterationsName,
                                                    ExperimentName,
-                                                   NumberOfIncorrectFactsInUseName,
-                                                   NumberOfCountriesWithRestrictedIncorrectFactsCountName,
-                                                   GenerateMayorsName
+                                                   MaxCleaningIterationsPerSampleName
                                                };
+        private static Type[] m_sTypeOfString = new Type[] { typeof(string) };
+        #region Singleton implementation
+        /// <summary>
+        /// Sataic c-tor ensures that the static variable m_sInstance is initiated before the first use of this class
+        /// </summary>
+        static CleaningConfiguration()
+        {
+            m_sInstance = new CleaningConfiguration();
+        }
 
+        /// <summary>
+        /// Static single instance access property
+        /// </summary>
+        public static CleaningConfiguration Instance
+        {
+            get
+            {
+                return m_sInstance;
+            }
+        }
+
+        /// <summary>
+        /// private constructor
+        /// </summary>
+        private CleaningConfiguration() 
+        {
+            MaxCleaningIterationsPerSample = 1;
+            ConversionDelta = 0.05;
+            ConversionSamplesCount = 10;
+
+        }
+        /// <summary>
+        /// single instance
+        /// </summary>
+        private static CleaningConfiguration m_sInstance = null;
+        #endregion
     }
 }

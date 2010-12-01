@@ -13,11 +13,12 @@ namespace DCF.DataLayer
     {
         
         #region Public methods
-        public MySqlUtils(string userName, string passwd, string dbName)
+        public MySqlUtils(string userName, string passwd, string dbName, string hostName)
         {
             m_userName = userName;
             m_password = passwd;
             m_dbName = dbName;
+            m_hostName = hostName;
             BatchSize = 10; // initial value
         }
 
@@ -308,6 +309,7 @@ namespace DCF.DataLayer
         public string DbName { get { return m_dbName; } }
         public string Password { get { return m_password; } }
         public string UserName { get { return m_userName; } }
+        public string HostName { get { return m_hostName; } }
 
         public System.Diagnostics.Stopwatch Stopper 
         { 
@@ -366,6 +368,7 @@ namespace DCF.DataLayer
         private string m_userName;
         private string m_password;
         private string m_dbName;
+        private string m_hostName;
         private DbConnection m_sqlConnection;
 
         #endregion
