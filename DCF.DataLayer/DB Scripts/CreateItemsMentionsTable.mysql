@@ -7,8 +7,8 @@ CREATE TABLE ItemsMentions (
   Time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   
   PRIMARY KEY (ID),
-  FOREIGN KEY imUserID_fkey (UserID) REFERENCES Users (UserID),
-  FOREIGN KEY imItemID_fkey (ItemID) REFERENCES Items (ItemID),
+  FOREIGN KEY imUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE,
+  FOREIGN KEY imItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE,
   KEY imItemID_key (itemID),
   KEY imUserID_key (UserID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$

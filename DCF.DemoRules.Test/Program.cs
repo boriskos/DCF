@@ -51,6 +51,7 @@ namespace DCF.DemoRules.Test
                 DateTime endTime = DateTime.Now;
                 Logger.TraceWriteLine(string.Format("Finishing the Rule Generation at {0}. Total runtime is {1} sec",
                     endTime.ToLongTimeString(), (endTime - startTime).TotalSeconds));
+                Logger.DebugFlush();
             }
         }
 

@@ -84,7 +84,6 @@ namespace DCF.Lib
                 Dictionary<string, object> data = new Dictionary<string, object>();
                 data["CheckCleanCitiesConsistency"] = new DCF.Lib.Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
                 data["CurrentIteration"] = new Func<int>(() => CurrentIteration);
-
                 foreach (Rule r in rulesList)
                 {
                     r.execute(data);

@@ -1,0 +1,18 @@
+﻿delimiter $$
+
+CREATE VIEW correctitems_view AS 
+select i.ItemID, i.ItemName,i.TopicID 
+from (items i join correctfacts cf) 
+where ((cf.ItemName = i.ItemName) and (i.TopicID = cf.TopicID))$$
+
+CREATE VIEW topicitem_view AS 
+select i.ItemID ,i.ItemName ,t.TopicName ,t.TopicId ,t.Value, t.Category 
+from (items i join topics t) where (i.TopicID = t.TopicId)$$
+
+create or replace view scoredfacts_view as
+SELECT t.Category, t.Value as Name, i.ItemName as Value, sf.Factor, sf.Score
+FROM scoredfacts sf, items i, topics t
+WHERE sf.itemid=i.itemid and t.topicid=i.topicid order by sf.Score desc$$
+
+create or replace view userscores_view as
+SELECT u.UserName, us.Belief, us.NumOfFacts FROM userscores us, users u where us.UserId=u.UserId$$

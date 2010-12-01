@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="OfflineCleaningRuleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rule.MultipleAnswersSample.cs" />
     <Compile Include="Rule.RepairKeySample.cs" />
     <Compile Include="Rule.DanielConvergence.cs" />
   </ItemGroup>

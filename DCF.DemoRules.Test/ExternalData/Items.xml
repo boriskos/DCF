@@ -12,6 +12,21 @@
         <string>USA</string>
         <string>France</string>
         <string>Tokyo</string>
+        <string>Germany</string>
+        <string>England</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Israel</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
     <ItemTemplate>
@@ -22,6 +37,22 @@
       <IncorrectValues>
         <string>USA</string>
         <string>Jordan</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Germany</string>
+        <string>England</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
     <ItemTemplate>
@@ -32,6 +63,22 @@
       <IncorrectValues>
         <string>USA</string>
         <string>Russia</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Germany</string>
+        <string>England</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
     <ItemTemplate>
@@ -43,6 +90,24 @@
         <string>China</string>
         <string>South Korea</string>
         <string>Philipines</string>
+        <string>USA</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Germany</string>
+        <string>England</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Israel</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
     <ItemTemplate>
@@ -54,6 +119,22 @@
         <string>England</string>
         <string>Russia</string>
         <string>Japan</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Germany</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Israel</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
     <ItemTemplate>
@@ -64,6 +145,169 @@
       <IncorrectValues>
         <string>USA</string>
         <string>Germany</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Israel</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfRussia</TopicName>
+      <CorrectValues>
+        <string>Moscow</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>Washington</string>
+        <string>St. Petersburg</string>
+        <string>Kiev</string>
+        <string>Riga</string>
+        <string>Novgorod</string>
+        <string>Paris</string>
+        <string>Athenes</string>
+        <string>Ottawa</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfIsrael</TopicName>
+      <CorrectValues>
+        <string>Jerusalem</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>Tel Aviv</string>
+        <string>Haifa</string>
+        <string>Cairo</string>
+        <string>Alexanria</string>
+        <string>Damascus</string>
+        <string>Bagdad</string>
+        <string>Athenes</string>
+        <string>Lisbon</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfUSA</TopicName>
+      <CorrectValues>
+        <string>Washington</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>New York</string>
+        <string>London</string>
+        <string>Filadelphia</string>
+        <string>Vancouver</string>
+        <string>Berlin</string>
+        <string>Paris</string>
+        <string>Athenes</string>
+        <string>Ottawa</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfJapan</TopicName>
+      <CorrectValues>
+        <string>Tokyo</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>Beijing</string>
+        <string>London</string>
+        <string>Honk Kong</string>
+        <string>Seul</string>
+        <string>Phenyang</string>
+        <string>Taiwan</string>
+        <string>Lisbon</string>
+        <string>Ottawa</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfFrance</TopicName>
+      <CorrectValues>
+        <string>Paris</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>Washington</string>
+        <string>London</string>
+        <string>Kiev</string>
+        <string>Riga</string>
+        <string>Amsterdam</string>
+        <string>Berlin</string>
+        <string>Athenes</string>
+        <string>Ottawa</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>CapitalOfEngland</TopicName>
+      <CorrectValues>
+        <string>London</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>Washington</string>
+        <string>Paris</string>
+        <string>Kiev</string>
+        <string>Riga</string>
+        <string>Amsterdam</string>
+        <string>Berlin</string>
+        <string>Athenes</string>
+        <string>Ottawa</string>
+        <string>Mut'</string>
+      </IncorrectValues>
+    </ItemTemplate>
+    <ItemTemplate>
+      <TopicName>WorldCities</TopicName>
+      <CorrectValues>
+        <string>Washington</string>
+        <string>Paris</string>
+        <string>Kiev</string>
+        <string>Riga</string>
+        <string>Amsterdam</string>
+        <string>Berlin</string>
+        <string>Athenes</string>
+        <string>Beijing</string>
+        <string>London</string>
+        <string>Honk Kong</string>
+        <string>Seul</string>
+        <string>Phenyang</string>
+        <string>Taiwan</string>
+        <string>Lisbon</string>
+        <string>Ottawa</string>
+        <string>Tel Aviv</string>
+        <string>Haifa</string>
+        <string>Cairo</string>
+        <string>Alexanria</string>
+        <string>Damascus</string>
+        <string>Bagdad</string>
+      </CorrectValues>
+      <IncorrectValues>
+        <string>USA</string>
+        <string>Jordan</string>
+        <string>France</string>
+        <string>Tokyo</string>
+        <string>Germany</string>
+        <string>England</string>
+        <string>Polin</string>
+        <string>Finland</string>
+        <string>Mut'</string>
+        <string>Turkey</string>
+        <string>Greese</string>
+        <string>Greece</string>
+        <string>Italy</string>
+        <string>Spain</string>
+        <string>Vatican</string>
+        <string>Nikaragua</string>
+        <string>Labrados</string>
+        <string>Canada</string>
       </IncorrectValues>
     </ItemTemplate>
   </ItemList>

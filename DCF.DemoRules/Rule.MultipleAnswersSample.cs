@@ -2,35 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.Common;
-using System.Data;
-using DCF.Lib;
-using DCF.DataLayer;
 using DCF.DataLayerAwareLib;
+using DCF.DataLayer;
+using DCF.Lib;
 using DCF.Common;
+using System.Data;
 
 namespace DCF.DemoRules
 {
-    public class RepairKeySample: MySqlRule
+    public class MultipleAnswersSample: MySqlRule
     {
-        public const double InitialFactScoreScale = 0.1;
-        public const double InitialScoreBase = 10;
-        public const double Alfa = 0.3;
-        public const double Epsilon = 0.00001;
-        public const double BeliefInitialValue = 0.2;
-
-        public RepairKeySample(MySqlUtils sqlUtils, IRuleSupplier ruleSupplier, string category) :
+        public MultipleAnswersSample(MySqlUtils sqlUtils, IRuleSupplier ruleSupplier, string category) :
             base(sqlUtils, ruleSupplier)
         {
             m_ruleExecuter += new RuleExecuterDelegate(SampleWithJoin);
             m_ruleInitializer += new RuleExecuterDelegate(internalInit);
-            Id = "RepairKeySample";
-            InvolvedTables = new List<string>(new string[] { 
-                TableConstants.UserCapitals, TableConstants.EncodedUserCapitals });
+            Id = "MultipleAnswersSample";
+            InvolvedTables = new List<string>();
             AffectedTables = new List<string>();
             PrerequisiteRules = new List<DCF.Lib.Rule>();
             Category = category;
         }
+        public const double BeliefInitialValue = 0.2;
 
         public string Category { get; private set; }
 
@@ -62,10 +55,10 @@ namespace DCF.DemoRules
                 "(SELECT u.UserID as UserId, {2} as Belief, 1 as Version, " +
                 "0 as NumOfFacts FROM {1} u " +
                 "WHERE u.UserID NOT IN (SELECT us.UserId FROM {0} us))",
-                TableConstants.UserScores, TableConstants.Users, BeliefInitialValue, 
+                TableConstants.UserScores, TableConstants.Users, BeliefInitialValue,
                 TableConstants.ItemsMentions));
 
-            // update users number of facts
+            // update users number of facts and zero Version
             SqlUtils.ExecuteNonQuery(string.Format(
                 "UPDATE {0} us,  (SELECT im.UserID, COUNT(*) as NumOfItems FROM {1} im GROUP BY im.UserID) s " +
                 "SET us.NumOfFacts = s.NumOfItems, Version=1 " +
@@ -95,7 +88,7 @@ namespace DCF.DemoRules
             SqlUtils.ExecuteNonQuery(String.Format(
                 "INSERT INTO {0} (ItemId, TopicId, Category, Factor, Score) " +
                 "SELECT i.ItemId, i.TopicId, '{3}' AS Category, 0 AS Factor, 0 AS Score " +
-                "FROM {1} t, {2} i WHERE t.TopicId=i.TopicId AND t.Category = '{3}' " + 
+                "FROM {1} t, {2} i WHERE t.TopicId=i.TopicId AND t.Category = '{3}' " +
                 "AND i.ItemId NOT IN (SELECT ItemID FROM {0})",
                 TableConstants.ScoredFacts, TableConstants.Topics, TableConstants.Items, Category));
 
@@ -168,15 +161,16 @@ namespace DCF.DemoRules
             {
                 Func<int> curIterationGetter = data["CurrentIteration"] as Func<int>;
 
-                Logger.DebugWriteLine("In "+Id, Logger.RulesStr);
+                Logger.DebugWriteLine("In " + Id, Logger.RulesStr);
                 Logger.DebugIndent();
 
+                // compute fact scores and normal;ize them
                 using (new PerformanceCounter(Id + "_Update"))
                 {
                     string factScoreUpdate1 = string.Format(
                         "UPDATE {0} sf SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM {1} us, {2} im " +
                         "WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='{3}'), 0)",
-                        TableConstants.ScoredFacts, TableConstants.UserScores, 
+                        TableConstants.ScoredFacts, TableConstants.UserScores,
                         TableConstants.ItemsMentions, Category);
                     string factScoreUpdate2 = string.Format(
                         "UPDATE {0} sf, (SELECT SUM(sf1.Score) AS TopicScore, sf1.TopicId " +
@@ -189,18 +183,21 @@ namespace DCF.DemoRules
                 }
 
                 DataSet scoredFactsDs = new DataSet();
-                using (new PerformanceCounter(Id+"_Fetch"))
+                using (new PerformanceCounter(Id + "_Fetch"))
                 {
                     // join these scores with encoded facts by user
                     SqlUtils.ExecuteQuery(string.Format(
-                        "SELECT * FROM {0} WHERE Category='{1}'",
+                        "SELECT sf.ItemId, sf.TopicId, sf.Score, sf.Factor, c.Correctness "+
+                        "FROM {0} sf, (select 0 as Correctness union select 1 as Correctness) c " +
+                        "WHERE sf.Category='{1}'",
                         TableConstants.ScoredFacts, Category), scoredFactsDs);
                 }
 
-                // make sure the countries are distinct
+                // at random (by the fact score) believe or disbelieve the fact
                 var repairedFacts = scoredFactsDs.Tables[0].AsEnumerable().RepairKey(
-                    row => row.Field<UInt32>("TopicId"),
-                    row => row.Field<double>("Score"));
+                    row => row.Field<UInt32>("ItemId")*1000 + row.Field<UInt32>("TopicId"),
+                    row => row.Field<Int64>("Correctness")==0 ? row.Field<double>("Score") : (1-row.Field<double>("Score")));
+                repairedFacts = repairedFacts.Where(row => row.Field<Int64>("Correctness") == 0);
                 int count = repairedFacts.Count();
                 Logger.DebugWriteLine(string.Format("Repairing {0} facts.", count));
                 if (count > 0)
@@ -226,7 +223,7 @@ namespace DCF.DemoRules
                         SqlUtils.ExecuteNonQuery(string.Format(
                             "UPDATE {0} us " +
                             "SET us.Belief=(us.Belief + " +
-                            "(SELECT COUNT(*) FROM {1} rk, {2} im WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)/" +
+                            "IFNULL((SELECT COUNT(*) FROM {1} rk, {2} im WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId), 0)/" +
                             //"us.Version/us.NumOfFacts)/(1+1/us.Version), us.Version=us.Version+1",
                             "us.Version/us.NumOfFacts), us.Version=us.Version+1",
                             TableConstants.UserScores,

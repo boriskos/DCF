@@ -6,7 +6,7 @@ CREATE TABLE Items (
   TopicID int(11) unsigned NOT NULL,
   
   PRIMARY KEY (ItemID),
-  FOREIGN KEY iTopicID_fkey (TopicID) REFERENCES Topics (TopicId),
+  FOREIGN KEY iTopicID_fkey (TopicID) REFERENCES Topics (TopicId) ON DELETE CASCADE ,
   UNIQUE KEY iTopicID_ItemName_ukey (TopicID, ItemName(255)),
   KEY iTopicID_key (TopicID),
   KEY iItemName_key (ItemName(255))

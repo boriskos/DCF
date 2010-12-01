@@ -93,7 +93,7 @@ namespace DCF.DemoRules
                 }
                 if (!uncoverged && curIteration - m_ConvergenceSamplesCount > 0)
                 {
-                    ((Func<bool>)dataHashTable["StopSampling"]).Invoke();
+                    OnStopCleaningProcess();
                 }
              }
         }

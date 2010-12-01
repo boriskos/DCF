@@ -31,5 +31,12 @@
         <string>England</string>
       </Values>
     </TopicTemplate>
+    <TopicTemplate>
+      <Name>WorldCities</Name>
+      <Text>What are the cities of the World?</Text>
+      <Type>MultipleAnswers</Type>
+      <Category>WorldCities</Category>
+      <Values/>
+    </TopicTemplate>
   </TopicList>
 </Topics>
