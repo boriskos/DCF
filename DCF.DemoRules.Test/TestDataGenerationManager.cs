@@ -39,9 +39,9 @@ namespace DCF.DemoRules.Test
                     {
                         m_initSection.NumberOfFacts = long.Parse(arg.Split('=')[1]);
                     }
-                    else if (arg.StartsWith(ArgName("NumberOfIncorrectFactsInUseName")))
+                    else if (arg.StartsWith(ArgName("TopicsVariabilityProfile")))
                     {
-                        m_initSection.NumberOfIncorrectFactsInUse = int.Parse(arg.Split('=')[1]);
+                        m_initSection.TopicsVariabilityProfile = arg.Split('=')[1];
                     }
                     else if (arg.StartsWith(ArgName("UserProfiles"), StringComparison.InvariantCultureIgnoreCase))
                     {

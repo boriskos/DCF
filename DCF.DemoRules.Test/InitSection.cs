@@ -34,34 +34,17 @@ namespace DCF.DemoRules.Test
 
         }
 
-        [ConfigurationProperty("NumberOfCountriesWithRestrictedIncorrectFactsCount",
-            DefaultValue = (int)0,
+        [ConfigurationProperty("TopicsVariabilityProfile",
             IsRequired = false)]
-        public int NumberOfCountriesWithRestrictedIncorrectFactsCount
+        public string TopicsVariabilityProfile
         {
             get
             {
-                return (int)this["NumberOfCountriesWithRestrictedIncorrectFactsCount"];
+                return (string)this["TopicsVariabilityProfile"];
             }
             set
             {
-                this["NumberOfCountriesWithRestrictedIncorrectFactsCount"] = value;
-            }
-
-        }
-
-        [ConfigurationProperty("NumberOfIncorrectFactsInUse",
-            DefaultValue = (int)0,
-            IsRequired = false)]
-        public int NumberOfIncorrectFactsInUse
-        {
-            get
-            {
-                return (int)this["NumberOfIncorrectFactsInUse"];
-            }
-            set
-            {
-                this["NumberOfIncorrectFactsInUse"] = value;
+                this["TopicsVariabilityProfile"] = value;
             }
 
         }
@@ -131,16 +114,13 @@ namespace DCF.DemoRules.Test
         public void TraceContents()
         {
             Logger.TraceWriteLine(string.Format("NumberOfFacts: {0}", NumberOfFacts));
-            Logger.TraceWriteLine(string.Format("NumberOfCountriesWithRestrictedIncorrectFactsCount: {0}", 
-                NumberOfCountriesWithRestrictedIncorrectFactsCount));
-            Logger.TraceWriteLine(string.Format("NumberOfIncorrectFactsInUse: {0}", NumberOfIncorrectFactsInUse));
             Logger.TraceWriteLine(string.Format("GenerateBasisTables: {0}", GenerateBasisTables));
             if (TopicsDefinitionFile != null)
                 Logger.TraceWriteLine(string.Format("TopicsDefinitionFile: {0}", TopicsDefinitionFile));
             if (ItemsDefinitionFile != null)
                 Logger.TraceWriteLine(string.Format("ItemsDefinitionFile: {0}", ItemsDefinitionFile));
             // report UserProfiles
-            List<Pair<double, double>> usersProfilesPortionBelief = getUserProfiles();
+            List<Pair<double, double>> usersProfilesPortionBelief = GetUserProfiles();
             if (usersProfilesPortionBelief.Count > 0)
             {
                 Logger.TraceWriteLine("Current user profiles:");
@@ -151,29 +131,53 @@ namespace DCF.DemoRules.Test
                 }
                 Logger.TraceUnindent();
             }
+            // report TopicProfiles
+            List<Pair<int, int>> topicsProfiles = GetTopicsVariabilityProfiles();
+            if (topicsProfiles.Count > 0)
+            {
+                Logger.TraceWriteLine("Current topic variablility profiles:");
+                Logger.TraceIndent();
+                foreach (var line in topicsProfiles)
+                {
+                    Logger.TraceWriteLine(string.Format("{0} topics have variability of {1} possible incorrect answers", line.First, line.Second));
+                }
+                Logger.TraceUnindent();
+            }
         }
 
         /// <summary>
         /// returns the user profiles as list of pairs : user percent, probability of the user to provde with correct answer
         /// </summary>
         /// <returns></returns>
-        public List<Pair<double, double>> getUserProfiles()
+        public List<Pair<double, double>> GetUserProfiles()
         {
-            List<Pair<double, double>> usersProfilesPortionBelief = new List<Pair<double, double>>();
-            if (UserProfiles == null)
+            List<Pair<double, double>> profilesList = new List<Pair<double, double>>();
+            string profiles = UserProfiles;
+            GetProfiles<double>(profilesList, profiles, a => double.Parse(a));
+            return profilesList;
+        }
+        public List<Pair<int, int>> GetTopicsVariabilityProfiles()
+        {
+            List<Pair<int, int>> profilesList = new List<Pair<int, int>>();
+            string profiles = TopicsVariabilityProfile;
+            GetProfiles<int>(profilesList, profiles, a => int.Parse(a));
+            return profilesList;
+        }
+
+        private static void GetProfiles<T>(List<Pair<T, T>> profilesList, string profiles, Func<string, T> parser) 
+        {
+            if (profiles != null)
             {
-                throw new ConfigurationErrorsException("User Profiles is not provided");
+                char[] separators = { '(', ')' };
+                string[] profileStr = profiles.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string pair in profileStr)
+                {
+                    string[] profileEntitiesStr = pair.Split(',');
+                    profilesList.Add(new Pair<T, T>(
+                        parser(profileEntitiesStr[0].Trim()),
+                        parser(profileEntitiesStr[1].Trim())));
+                }
             }
-            char[] separators = { '(', ')' };
-            string[] usersStr = UserProfiles.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string pair in usersStr)
-            {
-                string[] profileEntitiesStr = pair.Split(',');
-                usersProfilesPortionBelief.Add(new Pair<double, double>(
-                    double.Parse(profileEntitiesStr[0]),
-                    double.Parse(profileEntitiesStr[1])));
-            }
-            return usersProfilesPortionBelief;
         }
 
     }

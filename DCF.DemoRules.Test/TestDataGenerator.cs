@@ -93,7 +93,7 @@ namespace DCF.DemoRules.Test
             Random userRnd = new Random();
             Random iterationRnd = new Random();
             Random confidenceRnd = new Random();
-            List<Pair<double, double>> userProfile = m_initSection.getUserProfiles();
+            List<Pair<double, double>> userProfile = m_initSection.GetUserProfiles();
             long currentFactsNum = 0;
             int topicsCount = (from r in dtItems.AsEnumerable() select r.Field<uint>("TopicId")).Distinct().Count();
             Dictionary<int, int> topicId2CorrectCount = CreateTopicId2CorrectCountMap(dtCorrectFacts);
@@ -101,7 +101,7 @@ namespace DCF.DemoRules.Test
             int numberOfUsers = (int)m_initSection.NumberOfFacts / correctFactsCount + 10;
             List<User> listOfUsers = new List<User>(numberOfUsers);
             int currentUser = 0;
-            
+            Dictionary<int, int> restrictedTopics = DrawRestrictedTopics(m_initSection.GetTopicsVariabilityProfiles(), topicsCount);
 
             while (currentFactsNum < m_initSection.NumberOfFacts)
             {
@@ -137,15 +137,40 @@ namespace DCF.DemoRules.Test
                 if (answers[0] > 0) // correct answers
                     PopulateCorrectAnswers(dtCorrectFacts, dtItemsMentions, user, topicId, answers[0]);
                 if (answers[1] > 0) // incorrect answers
-                    populateIncorrectAnswers(dtItems, dtItemsMentions, user, topicId, topicId2CorrectCount[topicId], answers[1]);
+                    populateIncorrectAnswers(dtItems, dtItemsMentions, user, topicId, topicId2CorrectCount[topicId], answers[1], restrictedTopics);
                 currentFactsNum += answers[0] + answers[1];
             }
             PopulateUsersTable(listOfUsers, dtUsers);
             Logger.DebugWriteLine("Done!");
         }
 
-        #region Private Helping Methods
+        private Dictionary<int, int> DrawRestrictedTopics(List<Pair<int, int>> list, int topicsCount)
+        {
+            Dictionary<int, int> restrictedTopics = new Dictionary<int, int>();
+            Random rndTopics = new Random();
+            int j = 0;
+            foreach (var pair in list)
+            {
+                // for given number of topics choose them and set their restricted values
+                for (int i = 0; i < pair.First; i++)
+                {
+                    Logger.Assert(++j < topicsCount, "Topic Count is less than number of Topic Restrictions");
+                    // get next unrestricted topic
+                    int nextTopic;
+                    while (restrictedTopics.ContainsKey(nextTopic = rndTopics.Next(topicsCount))) ;
+                    restrictedTopics[nextTopic] = pair.Second;
+                }
+                
+            }
+            return restrictedTopics;
+        }
 
+        #region Private Helping Methods
+        /// <summary>
+        /// Converst list of users to Users Table
+        /// </summary>
+        /// <param name="listOfUsers">users to insert into the database</param>
+        /// <param name="dtUsers">table to be populated with users</param>
         private void PopulateUsersTable(List<User> listOfUsers, DataTable dtUsers)
         {
             foreach (User user in listOfUsers)
@@ -153,7 +178,16 @@ namespace DCF.DemoRules.Test
                 dtUsers.Rows.Add( user.Id, string.Format("{0}@tau.ac.il", user.Name), 0, DateTime.Now, 0, 0, user.Name);
             }
         }
-
+        /// <summary>
+        /// Chooses next user in round and robin way
+        /// </summary>
+        /// <param name="userRnd">random generator for Users</param>
+        /// <param name="userProfile">the user profile that keeps users-confidence pair</param>
+        /// <param name="numberOfUsers">total number of users</param>
+        /// <param name="listOfUsers">list of users that will be updated if its count is less than <paramref name="numberOfUsers"/></param>
+        /// <param name="currentUser">number of times this method is called</param>
+        /// <param name="topicsCount">number of topics that this user can provide</param>
+        /// <returns>old or new user</returns>
         private User DrawUser(
             Random userRnd, List<Pair<double, double>> userProfile, int numberOfUsers, 
             List<User> listOfUsers, ref int currentUser, int topicsCount)
@@ -179,7 +213,8 @@ namespace DCF.DemoRules.Test
             User user, 
             int topicId, 
             int correcFactsCount, 
-            int answersCount)
+            int answersCount,
+            Dictionary<int, int> restrictedTopics)
         {
             Random rnd = new Random();
             var allAnswers = from r in dtItems.AsEnumerable()
@@ -187,8 +222,20 @@ namespace DCF.DemoRules.Test
                              orderby r.Field<uint>("ItemId") ascending
                              select new { ItemId = r.Field<uint>("ItemId") };
             int lowId = (int)allAnswers.First().ItemId + correcFactsCount;
+            int highId;
+            if (restrictedTopics.TryGetValue(topicId, out highId))
+            {
+                Logger.Assert(highId >= answersCount, 
+                    string.Format("Restriction is too tight: for user {0} who should choose {1} answers with restriction of {2} possible wrong answers",
+                    user, answersCount, highId));
+                highId += lowId;
+            }
+            else
+            {
+                highId = int.MaxValue;
+            }
             var incorrectAnswers = from r in allAnswers
-                                   where r.ItemId > lowId
+                                   where r.ItemId > lowId && r.ItemId < highId
                                    orderby rnd.NextDouble()
                                    select r;
             foreach (var incorrectItem in incorrectAnswers)
