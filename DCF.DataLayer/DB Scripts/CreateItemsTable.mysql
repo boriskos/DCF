@@ -10,5 +10,5 @@ CREATE TABLE Items (
   UNIQUE KEY iTopicID_ItemName_ukey (TopicID, ItemName(255)),
   KEY iTopicID_key (TopicID),
   KEY iItemName_key (ItemName(255))
-) ENGINE=InnoDB AUTO_INCREMENT=8164 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+) ENGINE=MyISAM AUTO_INCREMENT=8164 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
 

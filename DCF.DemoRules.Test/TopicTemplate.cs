@@ -15,6 +15,13 @@ namespace DCF.DemoRules.Test
         public TopicType Type { get; set; }
         public string Category { get; set; }
         public List<string> Values { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Topic {0} type {1} category {2} text \"{3}\" values: {{ {4} }}",
+                Name, Type, Category, Text, String.Join( ",", Values.ToArray()));
+        }
+
     }
 
     public class Topics

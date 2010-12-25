@@ -15,6 +15,16 @@ namespace DCF.Lib
     public class CleaningConfiguration
     {
         /// <summary>
+        /// The values that <see cref="ExperimentType"/> can take
+        /// </summary>
+        public enum ExperimentTypeEnum
+        {
+            RepeirPrimaryKey = 0,
+            TwoEstimates = 1,
+            Cosine = 2,
+            Majority = 3
+        }
+        /// <summary>
         /// Max number of iterations 
         /// </summary>
         public int MaxSampleIterations {get; private set;}

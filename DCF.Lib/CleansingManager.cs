@@ -26,6 +26,7 @@ namespace DCF.Lib
                 Logger.DebugWriteLine("");
                 Logger.DebugFlush();
             }
+            Logger.TraceWriteLine(string.Format("The cleaning finished after {0} iterations", CurrentIteration));
         }
 
         public int CurrentIteration { get; private set; }

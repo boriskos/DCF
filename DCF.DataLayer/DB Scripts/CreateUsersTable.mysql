@@ -12,5 +12,5 @@ CREATE TABLE Users (
   PRIMARY KEY (UserID),
   UNIQUE KEY uUserEmail_ukey (UserEmail),
   KEY uPoints_Dividents_key (Points,DividendPoints)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
 

@@ -6,6 +6,7 @@ using DCF.Lib;
 using System.Configuration;
 using DCF.Common;
 using DCF.DataLayer;
+using DCF.PaperRules;
 
 namespace DCF.DemoRules.Test
 {
@@ -53,9 +54,9 @@ namespace DCF.DemoRules.Test
                     {
                         HostName = arg.Split('=')[1];
                     }
-                    else if (CleaningConfiguration.SettingNames.Contains(arg))
+                    else if (CleaningConfiguration.SettingNames.Contains(ExtractName(arg), StringComparer.InvariantCultureIgnoreCase))
                     {
-                        CleaningConfiguration.Instance[arg] = arg.Split('=')[1];
+                        CleaningConfiguration.Instance[ExtractName(arg)] = arg.Split('=')[1];
                     }
                     else
                     {
@@ -74,6 +75,15 @@ namespace DCF.DemoRules.Test
             TraceConfiguration();
         }
 
+        private string ExtractName(string arg)
+        {
+            if (arg.StartsWith("/") && arg.Contains('='))
+            { // valid argument
+                return arg.Substring(1).Split('=')[0];
+            }
+            return string.Empty; // incorrect argument
+        }
+
         /// <summary>
         /// Initializes the cleaning process
         /// </summary>
@@ -85,12 +95,30 @@ namespace DCF.DemoRules.Test
             m_sqlUtils = new MySqlNativeClientUtils(DBUsername, DBPassword, DBName, HostName);
             SqlUtils.Connect();
             Logger.TraceWriteLine(string.Format("Connected to {0}/{1}@{2} - {3}", DBUsername, DBPassword, DBName, HostName));
-            m_cleansingManager = new CleansingManager(new OfflineCleaningRuleProvider(SqlUtils));
+            m_cleansingManager = new CleansingManager(new PaperRuleProvider(SqlUtils));
+
+            // remove previous run data
+            Logger.TraceWriteLine("Truncating table " + TableConstants.ScoredFacts);
+            SqlUtils.TruncateTable(TableConstants.ScoredFacts);
+            Logger.TraceWriteLine("Truncating table " + TableConstants.UserScores);
+            SqlUtils.TruncateTable(TableConstants.UserScores);
         }
 
         public void DoTestFlow()
         {
             m_cleansingManager.cleanData(null);
+            // measure the quality
+            string innerSelect = 
+                "select a.* from scoredfacts a, " +
+                "(SELECT topicid, max(Score) as score FROM scoredfacts group by topicid) b " +
+                "where a.topicid = b.topicid and a.score = b.score group by a.topicid";
+            string qualityMeasurement = string.Format(
+                "select " +
+                "(select count(*) from ({0}) d, correctfacts c where c.itemid=d.itemid) / " +
+                "(select count(*) from ({0}) e) as Quality", innerSelect
+            );
+            object qualityRes = SqlUtils.ExecuteScalar(qualityMeasurement);
+            Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
         }
 
         public void FinishFlow()

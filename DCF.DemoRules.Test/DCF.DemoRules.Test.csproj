@@ -81,16 +81,39 @@
       <Project>{909A8C0C-BE2A-4BF8-A105-6E8706E7ADFF}</Project>
       <Name>DCF.Lib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DCF.PaperRules\DCF.PaperRules.csproj">
+      <Project>{4B750388-BDC6-4C96-A0FD-7302AF2B1874}</Project>
+      <Name>DCF.PaperRules</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="ExternalData\create_run_bat.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ExternalData\DCF.DemoRules.Test.Schema.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ExternalData\Items.xml" />
-    <Content Include="ExternalData\Topics.xml" />
+    <Content Include="ExternalData\db_probabilities.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExternalData\db_sizes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExternalData\Items.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExternalData\ItemsPaper.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExternalData\Topics.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ExternalData\TopicsPaper.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

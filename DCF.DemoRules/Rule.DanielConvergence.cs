@@ -78,10 +78,10 @@ namespace DCF.DemoRules
                     double userDif = (maxUserScore - minUserScore) / maxUserScore;
                     if (userDif > m_ConvergenceThreshold)
                     {
-                        Logger.DebugWriteLine(string.Format(
-                            "Iteration {0} Score (max, min) ({3}, {4}) PreviousIteration {1} "+
-                            "difference {2}",
-                            curIteration, curIteration - m_ConvergenceSamplesCount, userDif, maxUserScore, minUserScore));
+                        //Logger.DebugWriteLine(string.Format(
+                        //    "Iteration {0} Score (max, min) ({3}, {4}) PreviousIteration {1} "+
+                        //    "difference {2}",
+                        //    curIteration, curIteration - m_ConvergenceSamplesCount, userDif, maxUserScore, minUserScore));
 
                         nonConvergedUsersCount += 1.0;
                         if (nonConvergedUsersCount / usersCount > CleaningConfiguration.Instance.ConversionTolerance)

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{8A782AC0-E6C7-40DF-879B-71C2024DFCC1}</ProjectGuid>
+    <ProjectGuid>{4B750388-BDC6-4C96-A0FD-7302AF2B1874}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DCF.Common</RootNamespace>
-    <AssemblyName>DCF.Common</AssemblyName>
+    <RootNamespace>DCF.PaperRules</RootNamespace>
+    <AssemblyName>DCF.PaperRules</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,7 +32,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -46,10 +45,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logger.cs" />
-    <Compile Include="PerformanceCounter.cs" />
+    <Compile Include="PaperRuleProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Statistics.cs" />
+    <Compile Include="Rule.Cosine.cs" />
+    <Compile Include="Rule.Majority.cs" />
+    <Compile Include="Rule.TwoEstimate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DCF.Common\DCF.Common.csproj">
+      <Project>{8A782AC0-E6C7-40DF-879B-71C2024DFCC1}</Project>
+      <Name>DCF.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.DataLayerAwareLib\DCF.DataLayerAwareLib.csproj">
+      <Project>{8EF86018-D0F0-4977-A82D-292EF2B9B494}</Project>
+      <Name>DCF.DataLayerAwareLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.DataLayer\DCF.DataLayer.csproj">
+      <Project>{6F03B9FC-870E-4A30-9AC7-5D4CC5997860}</Project>
+      <Name>DCF.DataLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.DemoRules\DCF.DemoRules.csproj">
+      <Project>{A3AFF289-DDCC-447B-949E-2A7B78F9EC34}</Project>
+      <Name>DCF.DemoRules</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCF.Lib\DCF.Lib.csproj">
+      <Project>{909A8C0C-BE2A-4BF8-A105-6E8706E7ADFF}</Project>
+      <Name>DCF.Lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

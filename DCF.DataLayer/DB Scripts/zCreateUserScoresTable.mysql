@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS UserScores (
 	
 	PRIMARY KEY(UserID),
 	FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID)
-) ENGINE = InnoDB$$
+) ENGINE = MyISAM$$

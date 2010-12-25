@@ -161,6 +161,29 @@ namespace DCF.DataLayer
                 }
             }
         }
+
+        public void PopulateTableToDb(DataTable tbl)
+        {
+            using (new PerformanceCounter(SqlUtilsTimerName))
+            using (new PerformanceCounter("PopulateTableToDb"))
+            {
+                Logger.Assert(!string.IsNullOrEmpty(tbl.TableName), "Table Name must be set");
+
+                foreach (DataRow row in tbl.Rows)
+                {
+                    row.AcceptChanges();
+                    row.SetAdded();
+                }
+                using (DbDataAdapter da = CreateDataAdapter(string.Format(
+                    "select * from {0}", tbl.TableName)))
+                using (DbCommandBuilder cb = CreateCommandBuilder(da))
+                {
+                    da.UpdateBatchSize = 500;
+                    da.Update(tbl);
+                }
+            }
+        }
+
         public void RePopulateExistingTable(DataSet ds)
         {
             using (new PerformanceCounter(SqlUtilsTimerName))

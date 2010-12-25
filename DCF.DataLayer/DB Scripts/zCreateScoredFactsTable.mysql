@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS ScoredFacts (
 	FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID),
 	FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID),
 	FOREIGN KEY sfCategory_fkey (Category) REFERENCES Topics (Category)
-) ENGINE = InnoDB$$
+) ENGINE = MyISAM$$

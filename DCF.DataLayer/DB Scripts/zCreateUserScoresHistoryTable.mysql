@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS UserScoresHistory (
 	
 	PRIMARY KEY(UserID),
 	FOREIGN KEY ushUserID_fkey (UserID) REFERENCES Users (UserID)
-) ENGINE = InnoDB$$
+) ENGINE = MyISAM$$

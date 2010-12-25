@@ -17,10 +17,14 @@ namespace DCF.DemoRules.Test
         {
         }
 
+        public override bool IsReadOnly()
+        {
+            return false;
+        }
         [ConfigurationProperty("NumberOfFacts",
             DefaultValue=(long)1000,
             IsRequired=true)]
-        [LongValidator(MinValue=10, MaxValue=10000000, ExcludeRange=false)]
+        [LongValidator(MinValue=10, MaxValue=1000000000, ExcludeRange=false)]
         public long NumberOfFacts
         {
             get
@@ -125,10 +129,13 @@ namespace DCF.DemoRules.Test
             {
                 Logger.TraceWriteLine("Current user profiles:");
                 Logger.TraceIndent();
+                double dbOveralRate = 0.0;
                 foreach (var line in usersProfilesPortionBelief)
                 {
+                    dbOveralRate += line.First * line.Second;
                     Logger.TraceWriteLine(string.Format("{0} percent have probability of {1}", line.First*100, line.Second));
                 }
+                Logger.TraceWriteLine(string.Format("DB overal correct facts rate is {0}", dbOveralRate));
                 Logger.TraceUnindent();
             }
             // report TopicProfiles

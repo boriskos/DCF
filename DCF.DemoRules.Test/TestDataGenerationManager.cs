@@ -39,7 +39,7 @@ namespace DCF.DemoRules.Test
                     {
                         m_initSection.NumberOfFacts = long.Parse(arg.Split('=')[1]);
                     }
-                    else if (arg.StartsWith(ArgName("TopicsVariabilityProfile")))
+                    else if (arg.StartsWith(ArgName("TopicsVariabilityProfile"), StringComparison.InvariantCultureIgnoreCase))
                     {
                         m_initSection.TopicsVariabilityProfile = arg.Split('=')[1];
                     }
@@ -152,16 +152,17 @@ namespace DCF.DemoRules.Test
             DataTable dtUsers = new DataTable(TableConstants.Users);
             SqlUtils.ReadTableSchema(TableConstants.ItemsMentions, dtItemsMentions);
             SqlUtils.ReadTableSchema(TableConstants.Users, dtUsers);
-
-            m_testDataGenerator.SimulateUsersActivity(
-                dtTopics, dtItems, dtCorrectFacts, dtItemsMentions, dtUsers);
-            // commit changes into the database
-            Logger.DebugWrite("Populating database with users and their items mentions...");
+            // clean the tables ItemsMentions and Users
             SqlUtils.TruncateTable(dtItemsMentions.TableName);
             SqlUtils.TruncateTable(dtUsers.TableName);
 
-            SqlUtils.RePopulateExistingTable(dtUsers);
-            SqlUtils.RePopulateExistingTable(dtItemsMentions);
+            m_testDataGenerator.SimulateUsersActivity(
+                dtTopics, dtItems, dtCorrectFacts, dtItemsMentions, dtUsers, SqlUtils);
+            // commit changes into the database
+            Logger.DebugWrite("Populating database with users and their items mentions...");
+
+            // users are also inserted in SqlUtils.RePopulateExistingTable(dtUsers);
+            // this table is already been populated SqlUtils.RePopulateExistingTable(dtItemsMentions);
             Logger.DebugWriteLine("Done!");
         }
 

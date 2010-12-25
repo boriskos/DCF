@@ -46,7 +46,7 @@ namespace DCF.DemoRules
                 "Version int(11) NULL, " +
                 "NumOfFacts int(11) NOT NULL, " +
                 "FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
-                ") ENGINE = InnoDB",
+                ") ENGINE = MyISAM",
                 TableConstants.UserScores));
 
             // new users creation in the userscores table
@@ -81,7 +81,7 @@ namespace DCF.DemoRules
                 "PRIMARY KEY(ItemID), " +
                 "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
                 "FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE " +
-                ") ENGINE = InnoDB",
+                ") ENGINE = MyISAM",
                 TableConstants.ScoredFacts));
 
             // insert into ScoredFacts new facts
