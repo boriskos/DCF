@@ -65,7 +65,7 @@ namespace DCF.DemoRules
                     "FROM {0} WHERE Version>={1} GROUP BY UserId",
                     TableConstants.UserScoresHistory, curIteration - m_ConvergenceSamplesCount), ds);
                 // clean unnecesary data
-                SqlUtils.ExecuteNonQuery( string.Format(
+                SqlUtils.ExecuteNonQuery(string.Format(
                     "DELETE FROM {0} WHERE Version < {1}",
                     TableConstants.UserScoresHistory, curIteration - m_ConvergenceSamplesCount));
                 bool uncoverged = false;
@@ -75,7 +75,9 @@ namespace DCF.DemoRules
                 {
                     double minUserScore = row.Field<double>("MinScore");
                     double maxUserScore = row.Field<double>("MaxScore");
-                    double userDif = (maxUserScore - minUserScore) / maxUserScore;
+                    // double userDif = (maxUserScore - minUserScore) / maxUserScore;
+                    // we make this conversion constant to be absolute instead of relative
+                    double userDif = (maxUserScore - minUserScore);
                     if (userDif > m_ConvergenceThreshold)
                     {
                         //Logger.DebugWriteLine(string.Format(

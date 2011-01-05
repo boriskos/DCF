@@ -183,20 +183,94 @@ namespace DCF.DemoRules
                         }
 
                         // update users with the proportion of facts that survived this repair key operation
-                        SqlUtils.ExecuteNonQuery(string.Format(
-                            "UPDATE {0} us " +
-                            "SET us.Belief=(us.Belief + " +
-                            "(SELECT COUNT(*) FROM {1} rk, {2} im WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)/" +
-                            //"us.Version/us.NumOfFacts)/(1+1/us.Version), us.Version=us.Version+1",
-                            "us.Version/us.NumOfFacts), us.Version=us.Version+1",
-                            TableConstants.UserScores,
-                            TableConstants.RepKeyResults,
-                            TableConstants.ItemsMentions));
+
+                        NewScoreCalculation();
+                        //OriginalScoreCalculation();
+
+                        CalculateQuality(SqlUtils);
                     }
                 }
 
                 Logger.DebugUnindent();
             }
+        }
+
+        public static object CalculateQuality(MySqlUtils sqlUtils)
+        {
+            string innerSelect =
+                "select a.* from scoredfacts a, " +
+                "(SELECT topicid, max(Score) as score FROM scoredfacts group by topicid) b " +
+                "where a.topicid = b.topicid and a.score = b.score group by a.topicid";
+            string qualityMeasurement = string.Format(
+                "select " +
+                "(select count(*) from ({0}) d, correctfacts c where c.itemid=d.itemid) / " +
+                "(select count(*) from ({0}) e) as Quality", innerSelect
+            );
+            object qualityRes = sqlUtils.ExecuteScalar(qualityMeasurement);
+            Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
+            return qualityRes;
+        }
+
+        private void NewScoreCalculation()
+        {
+            // this works but not converges
+            SqlUtils.ExecuteNonQuery(string.Format(
+                "UPDATE {0} us " +
+                "SET us.Belief=((1-{3})*us.Belief + " +
+                "{3}*(SELECT COUNT(*) FROM {1} rk, {2} im " +
+                "WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)/" +
+                //"us.Version/us.NumOfFacts)/(1+1/us.Version), us.Version=us.Version+1",
+                "us.NumOfFacts/us.version), us.Version=us.Version+1",
+                TableConstants.UserScores,
+                TableConstants.RepKeyResults,
+                TableConstants.ItemsMentions,
+                0.2));
+        }
+
+        private void AddOnlyScoreCalculation()
+        {
+            // this works but not converges
+            SqlUtils.ExecuteNonQuery(string.Format(
+                "UPDATE {0} us " +
+                "SET us.Belief=(us.Belief + " +
+                "(SELECT COUNT(*) FROM {1} rk, {2} im " +
+                "WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)" +
+                "), us.Version=us.Version+1",
+                TableConstants.UserScores,
+                TableConstants.RepKeyResults,
+                TableConstants.ItemsMentions,
+                0.1));
+        }
+
+        private void OriginalScoreCalculation()
+        {
+            // this is original scores calculation
+            SqlUtils.ExecuteNonQuery(string.Format(
+                "UPDATE {0} us " +
+                "SET us.Belief=(us.Belief + " +
+                "(SELECT COUNT(*) FROM {1} rk, {2} im WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)/" +
+                //"us.Version/us.NumOfFacts)/(1+1/us.Version), us.Version=us.Version+1",
+                "us.Version/us.NumOfFacts), us.Version=us.Version+1",
+                TableConstants.UserScores,
+                TableConstants.RepKeyResults,
+                TableConstants.ItemsMentions));
+        }
+
+        private void ScoreItLikeCosine()
+        {
+            // behaves like cosine
+            string usersStmnt = string.Format(
+                "UPDATE {0} us SET us.Belief = (1-{3})*us.Belief + {3}*" +
+                "(2*IFNULL((SELECT SUM(sfu1.Score) FROM {2} sfu1, {5} rk " +
+                "WHERE rk.FactId=sfu1.ItemID AND sfu1.UserId = us.UserId AND Category='{4}'),0) - " +
+                "(SELECT SUM(sf2.Score) FROM {1} sf2 WHERE sf2.Factor>0 AND sf2.Category='{4}'))/" +
+                // norm
+                "(SELECT SQRT(COUNT(*)*SUM(sf1.score*sf1.score)) FROM {1} sf1 WHERE sf1.Factor>0 AND Category='{4}')",
+                TableConstants.UserScores, TableConstants.ScoredFacts,
+                TableConstants.ScoredFactsUsersView, 0.2, Category,
+                TableConstants.RepKeyResults);
+
+            SqlUtils.ExecuteNonQuery(usersStmnt);
         }
     }
 }

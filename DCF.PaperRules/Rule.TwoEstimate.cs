@@ -66,6 +66,8 @@ namespace DCF.PaperRules
 
                 SqlUtils.ExecuteNonQuery(factsStmnt);
                 SqlUtils.ExecuteNonQuery(usersStmnt);
+
+                RepairKeySample.CalculateQuality(SqlUtils);
             }
         }
 

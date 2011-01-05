@@ -43,6 +43,16 @@ namespace DCF.PaperRules
             SqlUtils.ExecuteNonQuery(String.Format(
                 "UPDATE {0} SET Score = 1.0 WHERE Category='{1}'", 
                 TableConstants.ScoredFacts, Category));
+
+            // initiallize the users Belief to 2*|f in u|/|f|-1
+            SqlUtils.ExecuteNonQuery(String.Format(
+                "UPDATE {0} us SET Belief = "+
+                "2*(SELECT COUNT(*) FROM {2} sfu WHERE us.UserId=sfu.UserId AND Category='{1}')/"+
+                "(SELECT COUNT(*) FROM {3} sf WHERE sf.Factor>0 AND Category='{1}') - 1",
+                TableConstants.UserScores, Category, 
+                TableConstants.ScoredFactsUsersView,
+                TableConstants.ScoredFacts));
+
         }
 
         void CosineMethod(Dictionary<string, object> data)
@@ -55,9 +65,9 @@ namespace DCF.PaperRules
                 string usersStmnt = string.Format(
                     "UPDATE {0} us SET us.Belief = (1-{3})*us.Belief + {3}*" +
                     "(2*(SELECT SUM(sfu1.Score) FROM {2} sfu1 WHERE sfu1.UserId = us.UserId AND Category='{4}') - "+
-                    "(SELECT SUM(sf2.Score) FROM {1} sf2 WHERE Category='{4}'))/"+
+                    "(SELECT SUM(sf2.Score) FROM {1} sf2 WHERE sf2.Factor>0 AND sf2.Category='{4}'))/"+
                     // norm
-                    "(SELECT SQRT(COUNT(*)*SUM(sf1.score*sf1.score)) FROM {1} sf1 WHERE Category='{4}')",
+                    "(SELECT SQRT(COUNT(*)*SUM(sf1.score*sf1.score)) FROM {1} sf1 WHERE sf1.Factor>0 AND Category='{4}')",
                     TableConstants.UserScores, TableConstants.ScoredFacts, 
                     TableConstants.ScoredFactsUsersView, Ni, Category);
 
@@ -73,11 +83,12 @@ namespace DCF.PaperRules
                 SqlUtils.ExecuteNonQuery(usersStmnt);
                 SqlUtils.ExecuteNonQuery(factsStmnt);
 
+                RepairKeySample.CalculateQuality(SqlUtils);
             }
         }
 
         public const string CosineStr = "Cosine";
-        public const double Ni = 0.2;
+        public const double Ni = 1.0;
 
     }
 }

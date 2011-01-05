@@ -37,21 +37,23 @@ namespace DCF.PaperRules
             {
                 case CleaningConfiguration.ExperimentTypeEnum.Cosine:
                     list.Add( new Cosine(MySqlUtils, this, "CountryOf") );
+                    list.Add(new DanielConvergence(m_sqlUstils, this));
                     break;
                 case CleaningConfiguration.ExperimentTypeEnum.Majority:
                     list.Add( new Majority(MySqlUtils, this, "CountryOf") );
                     break;
                 case CleaningConfiguration.ExperimentTypeEnum.RepeirPrimaryKey:
                     list.Add( new RepairKeySample(m_sqlUstils, this, "CountryOf") );
+                    list.Add(new DanielConvergence(m_sqlUstils, this));
                     break;
                 case CleaningConfiguration.ExperimentTypeEnum.TwoEstimates:
                     list.Add( new TwoEstimate(MySqlUtils, this, "CountryOf") );
+                    list.Add(new DanielConvergence(m_sqlUstils, this));
                     break;
                 default:
                     throw new System.Configuration.ConfigurationException("Invalid Experiment value " +
                         CleaningConfiguration.Instance.ExperimentType.ToString());
             }
-            list.Add( new DanielConvergence(m_sqlUstils, this) );
             return list;
         }
 
