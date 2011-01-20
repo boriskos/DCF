@@ -7,6 +7,7 @@ using System.Configuration;
 using DCF.Common;
 using DCF.DataLayer;
 using DCF.PaperRules;
+using MySql.Data.MySqlClient;
 
 namespace DCF.DemoRules.Test
 {
@@ -98,10 +99,18 @@ namespace DCF.DemoRules.Test
             m_cleansingManager = new CleansingManager(new PaperRuleProvider(SqlUtils));
 
             // remove previous run data
-            Logger.TraceWriteLine("Truncating table " + TableConstants.ScoredFacts);
-            SqlUtils.TruncateTable(TableConstants.ScoredFacts);
-            Logger.TraceWriteLine("Truncating table " + TableConstants.UserScores);
-            SqlUtils.TruncateTable(TableConstants.UserScores);
+            try
+            {
+                Logger.TraceWriteLine("Truncating table " + TableConstants.ScoredFacts);
+                SqlUtils.TruncateTable(TableConstants.ScoredFacts);
+                Logger.TraceWriteLine("Truncating table " + TableConstants.UserScores);
+                SqlUtils.TruncateTable(TableConstants.UserScores);
+            }
+            catch (MySqlException)
+            {
+                Logger.TraceWriteLine(string.Format("Tables {0} and {1} do not exit", 
+                    TableConstants.ScoredFacts, TableConstants.UserScores));
+            }
         }
 
         public void DoTestFlow()

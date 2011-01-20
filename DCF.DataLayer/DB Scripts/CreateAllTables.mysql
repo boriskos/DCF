@@ -1,0 +1,71 @@
+﻿delimiter $$
+
+CREATE TABLE Users (
+  UserID int(11) unsigned NOT NULL AUTO_INCREMENT,
+  UserEmail varchar(50) COLLATE utf8_bin NOT NULL,
+  Points int(11) unsigned NOT NULL DEFAULT '0',
+  Time datetime NOT NULL,
+  DividendPoints int(11) NOT NULL DEFAULT '0',
+  PointsSinceLastLogin int(11) NOT NULL DEFAULT '0',
+  UserName varchar(100) COLLATE utf8_bin NOT NULL,
+  
+  PRIMARY KEY (UserID),
+  UNIQUE KEY uUserEmail_ukey (UserEmail),
+  KEY uPoints_Dividents_key (Points,DividendPoints)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+
+CREATE TABLE `queryforms` (
+  `id` int(11) NOT NULL,
+  `FormName` varchar(100) COLLATE latin1_bin NOT NULL,
+  `FormDescription` varchar(1000) COLLATE latin1_bin DEFAULT NULL,
+  `FormTitle` varchar(50) COLLATE latin1_bin DEFAULT NULL,
+  `FormQuestionText` varchar(500) COLLATE latin1_bin DEFAULT NULL,
+  `ParamsTableName` varchar(45) COLLATE latin1_bin DEFAULT NULL,
+  `ParamsColNames` varchar(250) COLLATE latin1_bin DEFAULT NULL,
+  `QueryBody` varchar(1000) COLLATE latin1_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin 
+COMMENT='Keeps information that describes Question Answering forms'$$
+
+
+CREATE TABLE Topics (
+  TopicId int(11) unsigned NOT NULL AUTO_INCREMENT,
+  TopicName varchar(70) COLLATE utf8_bin NOT NULL,
+  TopicText varchar(200) COLLATE utf8_bin NOT NULL,
+  TopicType smallint(1) unsigned ZEROFILL NOT NULL,
+  Category varchar(70) COLLATE utf8_bin NOT NULL,
+  Rank DOUBLE,
+  Value varchar(100) COLLATE utf8_bin NULL,
+
+  PRIMARY KEY (TopicId),
+  UNIQUE KEY tTopicName_ukey (TopicName)
+) ENGINE=MyISAM AUTO_INCREMENT=131 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+
+CREATE TABLE Items (
+  ItemID int(11) unsigned NOT NULL AUTO_INCREMENT,
+  ItemName varchar(500) COLLATE utf8_bin NOT NULL,
+  TopicID int(11) unsigned NOT NULL,
+  
+  PRIMARY KEY (ItemID),
+  FOREIGN KEY iTopicID_fkey (TopicID) REFERENCES Topics (TopicId) ON DELETE CASCADE ,
+  UNIQUE KEY iTopicID_ItemName_ukey (TopicID, ItemName(255)),
+  KEY iTopicID_key (TopicID),
+  KEY iItemName_key (ItemName(255))
+) ENGINE=MyISAM AUTO_INCREMENT=8164 DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+
+
+CREATE TABLE ItemsMentions (
+  ID int(11) unsigned NOT NULL AUTO_INCREMENT,
+  UserID int(11) unsigned NOT NULL,
+  ItemID int(11) unsigned NOT NULL,
+  Time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  
+  PRIMARY KEY (ID),
+  FOREIGN KEY imUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE,
+  FOREIGN KEY imItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE,
+  KEY imItemID_key (itemID),
+  KEY imUserID_key (UserID)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin$$
+
+CREATE TABLE CorrectFacts AS (SELECT * FROM Items WHERE 1=0)
+

@@ -38,6 +38,7 @@
       <xs:element minOccurs="1" maxOccurs="1" name="Type" type="TopicType" />
       <xs:element minOccurs="0" maxOccurs="1" name="Category" type="xs:string" />
       <xs:element minOccurs="0" maxOccurs="1" name="Values" type="ArrayOfString" />
+      <xs:element minOccurs="0" maxOccurs="1" name="NumValues" type="xs:integer" />
     </xs:sequence>
   </xs:complexType>
   <xs:simpleType name="TopicType">
