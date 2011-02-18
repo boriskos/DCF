@@ -32,12 +32,15 @@
             // 
             // _btnQuery
             // 
+            this._btnQuery.FlatAppearance.BorderColor = System.Drawing.Color.Olive;
+            this._btnQuery.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DarkKhaki;
+            this._btnQuery.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Olive;
             this._btnQuery.Click += new System.EventHandler(this._btnQuery_Click);
             // 
             // QueryFormMySql
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(690, 335);
+            this.ClientSize = new System.Drawing.Size(1184, 664);
             this.Name = "QueryFormMySql";
             this.ResumeLayout(false);
 

@@ -16,7 +16,7 @@ namespace DCF.QuestionAnswering
             InitializeComponent();
         }
 
-        private void _dataGridViewQueryResults_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        protected virtual void _dataGridViewQueryResults_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             int colWidth = 0;
             foreach (DataGridViewColumn col in _dataGridViewQueryResults.Columns)
@@ -28,9 +28,5 @@ namespace DCF.QuestionAnswering
             _dataGridViewQueryResults.Size = new Size(oldLocation.X+oldSize.Width-start_location, oldSize.Height);
         }
 
-        private void _dataGridViewQueryResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
     }
 }

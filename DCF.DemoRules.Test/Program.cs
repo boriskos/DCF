@@ -7,6 +7,7 @@ using System.IO;
 using DCF.Common;
 using System.Diagnostics;
 using DCF.DataLayerAwareLib;
+using System.Threading;
 
 namespace DCF.DemoRules.Test
 {
@@ -29,7 +30,7 @@ namespace DCF.DemoRules.Test
             else
             {
                 DateTime startTime = DateTime.Now;
-                Logger.TraceWriteLine(string.Format("Starting the Rule Generation at {0}", startTime.ToLongTimeString()));
+                Logger.TraceWriteLine(string.Format("Starting the process at {0}", startTime.ToLongTimeString()));
                 switch (args[0])
                 {
                     case "generate":
@@ -44,16 +45,37 @@ namespace DCF.DemoRules.Test
                             Usage();
                         }
                         break;
+                    case "continous-cleaning":
+                        if (!ContinousCleaning(args))
+                        {
+                            Usage();
+                        }
+                        break;
                     default:
                         Usage();
                         break;
                 }
                 DateTime endTime = DateTime.Now;
-                Logger.TraceWriteLine(string.Format("Finishing the Rule Generation at {0}. Total runtime is {1} sec",
+                Logger.TraceWriteLine(string.Format("Finishing the process at {0}. Total runtime is {1} sec",
                     endTime.ToLongTimeString(), (endTime - startTime).TotalSeconds));
                 Logger.DebugWriteLine(PerformanceCounterStatic.ReportAllTimers());
                 Logger.DebugFlush();
             }
+        }
+
+        private static bool ContinousCleaning(string[] args)
+        {
+            CountinousThreadState cleaner_state = new CountinousThreadState(args);
+
+            Thread t = new Thread(new ThreadStart(cleaner_state.thread_main));
+            t.Start();
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey(true);
+            Console.Write("Exinting thread...");
+            cleaner_state.StopThread();
+            t.Join();
+            Console.WriteLine("done");
+            return true;
         }
 
         private static bool CleanDatabase(string[] args)
@@ -116,6 +138,7 @@ namespace DCF.DemoRules.Test
             Logger.TraceUnindent();
             Logger.TraceWriteLine("");
             Logger.TraceWriteLine("clean - cleans the database by running set of algorithms");
+            Logger.TraceWriteLine("continous-cleaning - cleans the database continously");
 
             Logger.TraceUnindent();
         }

@@ -1,0 +1,39 @@
+﻿INSERT INTO `astellas`.`queryforms` (
+`id` ,
+`FormName` ,
+`FormDescription` ,
+`FormTitle` ,
+`FormQuestionText` ,
+`ParamsTableName` ,
+`ParamsColNames` ,
+`QueryBody`
+)
+VALUES (
+'1', 
+'Query Guess', 
+'Queries guess topics', 
+'Gueeses', 
+'Please select topic to query: {0}', 
+'topics', 
+'TopicName', 
+'SELECT it.name AS ItemName, count( * ) AS Support FROM items it, itemsmentions im WHERE it.id = im.itemid AND im.topicid in (select TopicId from topics where TopicName = ''{0}'') GROUP BY it.name ORDER BY Support DESC LIMIT 0 , 15'
+);
+INSERT INTO `astellas`.`queryforms` (
+`id` ,
+`FormName` ,
+`FormDescription` ,
+`FormTitle` ,
+`FormQuestionText` ,
+`ParamsTableName` ,
+`ParamsColNames` ,
+`QueryBody`
+)
+VALUES (
+'2', 
+'Query Cleaning', 
+'Queries cleaning results on guess table', 
+'Cleaning Results', 
+'Choose topic to see items in it {0}', 
+'Topics', 'TopicName', 
+'select i.name as Name, sf.score as Score from items i, topics t, scoredfacts sf where sf.topicid=t.topicid and t.topicname=''{0}'' and i.id=sf.itemid order by score desc LIMIT 0, 20'
+);

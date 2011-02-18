@@ -175,6 +175,10 @@ namespace DCF.DemoRules.Test
             Logger.DebugWriteLine("Done!");
         }
 
+        public InitSection InitSection { get { return m_initSection; } }
+
+        #region Private Helping Methods
+
         private Dictionary<int, int> DrawRestrictedTopics(List<Pair<int, int>> list, int topicsCount)
         {
             Dictionary<int, int> restrictedTopics = new Dictionary<int, int>();
@@ -202,8 +206,6 @@ namespace DCF.DemoRules.Test
             Logger.TraceUnindent();
             return restrictedTopics;
         }
-
-        #region Private Helping Methods
         /// <summary>
         /// Converst list of users to Users Table
         /// </summary>
@@ -340,7 +342,7 @@ namespace DCF.DemoRules.Test
             Logger.DebugWriteLine(string.Format("{1} Items are sucessfully loaded from {0}", itemsTemplateFile, items.ItemList.Count));
         }
 
-        private void GenerateBasisRecords(
+        protected void GenerateBasisRecords(
             DataTable dtTopics, DataTable dtItems, DataTable dtCorrectFacts,
             Items items, Topics topics)
         {

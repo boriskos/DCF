@@ -15,7 +15,7 @@ namespace DCF.DataLayer
     {
         public const string UserScores = "userscores";
         public const string UserScoresHistory = "userscoreshistory";
-        public const string Users = "users";
+        public const string Users = "users_v";
         public const string BelievedUsers = "believedusers";
         public const string UserCapitals = "usercapitals";
         public const string WikiCities = "wikicities";
@@ -40,8 +40,8 @@ namespace DCF.DataLayer
         public const string CorrectFacts = "correctfacts";
         public const string UserMayors = "UserMayors";
 
-        public const string ItemsMentions = "ItemsMentions";
-        public const string Items = "Items";
+        public const string ItemsMentions = "ItemsMentions_v";
+        public const string Items = "Items_v";
         public const string Topics = "Topics";
     }
 }

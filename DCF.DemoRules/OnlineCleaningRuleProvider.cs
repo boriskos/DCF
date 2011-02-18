@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using DCF.Lib;
 using DCF.DataLayer;
 
 namespace DCF.DemoRules
 {
-    /// <summary>
-    /// Returns list of two Rules for offline cleaning
-    /// </summary>
-    public class OfflineCleaningRuleProvider : IRuleSupplier
+    public class OnlineCleaningRuleProvider: IRuleSupplier
     {
         public DCF.DataLayer.MySqlUtils MySqlUtils
         {
@@ -30,14 +28,12 @@ namespace DCF.DemoRules
         {
             return new List<DCF.Lib.Rule>() 
             { 
-                //new RepairKeySample(m_sqlUstils, this, "CountryOf"),
-                new MultipleAnswersSample(m_sqlUstils, this, "Original"),
-                new DanielConvergence(m_sqlUstils, this)
+                new SingleIterationMultiAnswersRule(m_sqlUstils, this, "Original"),
             };
         }
 
         #endregion
-        public OfflineCleaningRuleProvider(MySqlUtils utils)
+        public OnlineCleaningRuleProvider(MySqlUtils utils)
         {
             m_sqlUstils = utils;
         }

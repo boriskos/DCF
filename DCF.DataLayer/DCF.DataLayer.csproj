@@ -66,6 +66,7 @@
     <None Include="DB Scripts\CreateItemsTable.mysql" />
     <None Include="DB Scripts\CreateQueryFormsTable.mysql" />
     <None Include="DB Scripts\CreateViews.mysql" />
+    <None Include="DB Scripts\PopulateQueryForms.mysql" />
     <None Include="DB Scripts\PopulateUsersFromGuess.mysql" />
     <None Include="DB Scripts\zCreateScoredFactsTable.mysql" />
     <None Include="DB Scripts\CreateTopicsTable.mysql" />

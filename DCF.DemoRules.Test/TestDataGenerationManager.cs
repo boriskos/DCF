@@ -166,6 +166,69 @@ namespace DCF.DemoRules.Test
             Logger.DebugWriteLine("Done!");
         }
 
+        public void DoTestFlowAdvanced()
+        {
+            // regenerate Correct Facts table if necessary
+            if (m_initSection.GenerateBasisTables)
+            {
+                Logger.DebugWriteLine(string.Format("Recreating {0} table...", TableConstants.CorrectFacts));
+                SqlUtils.DropTableIfExists(TableConstants.CorrectFacts);
+                SqlUtils.ExecuteNonQuery("CREATE TABLE CorrectFacts AS (SELECT * FROM Items WHERE 1=0)");
+                Logger.DebugWriteLine("Done!");
+            }
+
+            DataTable dtTopics = new DataTable(TableConstants.Topics);
+            DataTable dtItems = new DataTable(TableConstants.Items);
+            DataTable dtCorrectFacts = new DataTable(TableConstants.CorrectFacts);
+            SqlUtils.ReadTableSchema(TableConstants.Topics, dtTopics);
+            SqlUtils.ReadTableSchema(TableConstants.Items, dtItems);
+            SqlUtils.ReadTableSchema(TableConstants.CorrectFacts, dtCorrectFacts);
+
+            /////////////////////////////////////////////////////////////////
+            // generated the basis tables if necessary and update the database
+            if (m_testDataGenerator.GenerateBasisTables(dtTopics, dtItems, dtCorrectFacts))
+            {
+                Logger.DebugWrite("Replacing Basic Tables in the database...");
+                // ItemsMentions has a foreign key to Itmes
+                SqlUtils.TruncateTable(TableConstants.ItemsMentions); 
+                SqlUtils.TruncateTable(dtItems.TableName);
+                SqlUtils.TruncateTable(dtCorrectFacts.TableName);
+                SqlUtils.TruncateTable(dtTopics.TableName);
+
+                SqlUtils.RePopulateExistingTable(dtTopics);
+                SqlUtils.RePopulateExistingTable(dtItems);
+                SqlUtils.RePopulateExistingTable(dtCorrectFacts);
+                Logger.DebugWriteLine("Done!");
+            }
+            else // otherwise, read the database tables
+            {
+                Logger.DebugWrite("Populating Basic Tables from the database...");
+                SqlUtils.PopulateTableFromDB(dtItems);
+                SqlUtils.PopulateTableFromDB(dtCorrectFacts);
+                SqlUtils.PopulateTableFromDB(dtTopics);
+                Logger.DebugWriteLine("Done!");
+            }
+
+            /////////////////////////////////////////////////////////////////
+            // now simulate the user activities according to the parameters
+            DataTable dtItemsMentions = new DataTable(TableConstants.ItemsMentions);
+            DataTable dtUsers = new DataTable(TableConstants.Users);
+            SqlUtils.ReadTableSchema(TableConstants.ItemsMentions, dtItemsMentions);
+            SqlUtils.ReadTableSchema(TableConstants.Users, dtUsers);
+            // clean the tables ItemsMentions and Users
+            SqlUtils.TruncateTable(dtItemsMentions.TableName);
+            SqlUtils.TruncateTable(dtUsers.TableName);
+
+            m_testDataGenerator.SimulateUsersActivity(
+                dtTopics, dtItems, dtCorrectFacts, dtItemsMentions, dtUsers, SqlUtils);
+            // commit changes into the database
+            Logger.DebugWrite("Populating database with users and their items mentions...");
+
+            // users are also inserted in SqlUtils.RePopulateExistingTable(dtUsers);
+            // this table is already been populated SqlUtils.RePopulateExistingTable(dtItemsMentions);
+            Logger.DebugWriteLine("Done!");
+        }
+
         public void FinishFlow()
         {
             Dispose();

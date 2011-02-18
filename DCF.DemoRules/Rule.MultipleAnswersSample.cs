@@ -44,8 +44,8 @@ namespace DCF.DemoRules
                 "UserID int(11) unsigned NOT NULL PRIMARY KEY, " +
                 "Belief double NOT NULL, " +
                 "Version int(11) NULL, " +
-                "NumOfFacts int(11) NOT NULL, " +
-                "FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
+                "NumOfFacts int(11) NOT NULL " +
+                //", FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
                 ") ENGINE = MyISAM",
                 TableConstants.UserScores));
 
@@ -75,11 +75,10 @@ namespace DCF.DemoRules
                 "Score DOUBLE NOT NULL, " +
                 "Category varchar(70) COLLATE utf8_bin NOT NULL, " +
                 "Correctness TINYINT(1) NULL, " +
-                //"FactName varchar(100) COLLATE utf8_bin NULL, " +
-                //"FactValue varchar(500) COLLATE utf8_bin NOT NULL, " +
 
                 "PRIMARY KEY(ItemID), " +
-                "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
+                //"FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
+                "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE, " +
                 "FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE " +
                 ") ENGINE = MyISAM",
                 TableConstants.ScoredFacts));
@@ -95,55 +94,8 @@ namespace DCF.DemoRules
             // update all facts Factor 
             SqlUtils.ExecuteNonQuery(String.Format(
                 "UPDATE {0} sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM {1} im GROUP BY im.ItemId) s " +
-                "SET sf.FActor = s.Factor WHERE sf.ItemId = s.ItemId",
+                "SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId",
                 TableConstants.ScoredFacts, TableConstants.ItemsMentions));
-
-
-            ///////////////////////////////////////////////
-            // create view that connects user capitals to scored facts
-            //SqlUtils.DropTableIfExists(TableConstants.ScoredFactsUsers);
-            //SqlUtils.ExecuteNonQuery(string.Format(
-            //    "CREATE TABLE IF NOT EXISTS {0} (" +
-            //    "FactId INT(11) NOT NULL," +
-            //    "UserId INT(11) NOT NULL, " +
-            //    "INDEX FactId_idx (FactId ASC), " +
-            //    "INDEX UserId_idx (UserId ASC) )" +
-            //    "ENGINE=MEMORY",
-            //    TableConstants.ScoredFactsUsers));
-
-            //SqlUtils.ExecuteNonQuery(string.Format(
-            //    "INSERT INTO {0} (" +
-            //    "SELECT sf.ID as FactId, uc.UserID FROM {1} uc, {2} sf " +
-            //    "WHERE uc.City = sf.City AND uc.Country=sf.Country )",
-            //    TableConstants.ScoredFactsUsers,
-            //    TableConstants.UserCapitals,
-            //    TableConstants.ScoredFacts));
-
-            //// creates view of capitals to their total score
-            //SqlUtils.ExecuteNonQuery(string.Format(
-            //    "CREATE OR REPLACE VIEW {0} AS " +
-            //    "SELECT uc.Country, SUM(aus.Score) AS Score " +
-            //    "FROM {1} uc, {2} aus " +
-            //    "WHERE uc.userid=aus.userid " +
-            //    "GROUP BY uc.Country",
-            //    TableConstants.CapitalsScoresView,
-            //    TableConstants.UserCapitals,
-            //    TableConstants.AbsoluteUserScoresView));
-
-            //// creation of scored facts view
-            //SqlUtils.ExecuteNonQuery(string.Format(
-            //    "CREATE OR REPLACE VIEW {0} AS " +
-            //    "SELECT sf.ID, sf.Country, sf.City, sum(aus.Score)/cs.Score AS Score " +
-            //    "FROM {1} aus, {2} sf, {3} uc, {4} cs " +
-            //    "WHERE sf.Country = uc.Country AND sf.City = uc.City AND uc.UserID = aus.UserId " +
-            //        "AND cs.Country = sf.Country " +
-            //    "GROUP BY sf.Country, sf.City",
-            //    TableConstants.ScoredFactsView,
-            //    TableConstants.AbsoluteUserScoresView,
-            //    TableConstants.ScoredFacts,
-            //    TableConstants.UserCapitals,
-            //    TableConstants.CapitalsScoresView));
-            ///////////////////////////////////////////////////
 
             //////////////////////////////////////////////
             // create temporary table for repair key operation resluts
@@ -154,7 +106,7 @@ namespace DCF.DemoRules
 
         }
 
-        void SampleWithJoin(Dictionary<string, object> data)
+        public virtual void SampleWithJoin(Dictionary<string, object> data)
         {
             using (new PerformanceCounter(RulesLogger))
             using (new PerformanceCounter(Id))
@@ -164,7 +116,7 @@ namespace DCF.DemoRules
                 Logger.DebugWriteLine("In " + Id, Logger.RulesStr);
                 Logger.DebugIndent();
 
-                // compute fact scores and normal;ize them
+                // compute fact scores and normalize them
                 using (new PerformanceCounter(Id + "_Update"))
                 {
                     string factScoreUpdate1 = string.Format(
@@ -220,15 +172,7 @@ namespace DCF.DemoRules
                         }
 
                         // update users with the proportion of facts that survived this repair key operation
-                        SqlUtils.ExecuteNonQuery(string.Format(
-                            "UPDATE {0} us " +
-                            "SET us.Belief=(us.Belief + " +
-                            "IFNULL((SELECT COUNT(*) FROM {1} rk, {2} im WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId), 0)/" +
-                            //"us.Version/us.NumOfFacts)/(1+1/us.Version), us.Version=us.Version+1",
-                            "us.Version/us.NumOfFacts), us.Version=us.Version+1",
-                            TableConstants.UserScores,
-                            TableConstants.RepKeyResults,
-                            TableConstants.ItemsMentions));
+                        RepairKeySample.NewScoreCalculation(SqlUtils);
                     }
                 }
 

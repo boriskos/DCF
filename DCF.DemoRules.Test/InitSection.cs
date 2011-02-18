@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Globalization;
 using Wintellect.PowerCollections;
 using DCF.Common;
+using System.Text.RegularExpressions;
 
 namespace DCF.DemoRules.Test
 {
@@ -112,6 +113,23 @@ namespace DCF.DemoRules.Test
             }
         }
 
+        [ConfigurationProperty("TopicsNumber",
+            DefaultValue = (long)1000,
+            IsRequired = true)]
+        [LongValidator(MinValue = 10, MaxValue = 1000000000, ExcludeRange = false)]
+        public long TopicsNumber
+        {
+            get
+            {
+                return (long)this["TopicsNumber"];
+            }
+            set
+            {
+                this["TopicsNumber"] = value;
+            }
+
+        }
+
         /// <summary>
         /// Uses <see cref="Logger"/> class to trace the current state
         /// </summary>
@@ -123,6 +141,8 @@ namespace DCF.DemoRules.Test
                 Logger.TraceWriteLine(string.Format("TopicsDefinitionFile: {0}", TopicsDefinitionFile));
             if (ItemsDefinitionFile != null)
                 Logger.TraceWriteLine(string.Format("ItemsDefinitionFile: {0}", ItemsDefinitionFile));
+            Logger.TraceWriteLine(string.Format("TopicsNumber: {0}", TopicsNumber));
+            
             // report UserProfiles
             List<Pair<double, double>> usersProfilesPortionBelief = GetUserProfiles();
             if (usersProfilesPortionBelief.Count > 0)
@@ -168,6 +188,23 @@ namespace DCF.DemoRules.Test
             List<Pair<int, int>> profilesList = new List<Pair<int, int>>();
             string profiles = TopicsVariabilityProfile;
             GetProfiles<int>(profilesList, profiles, a => int.Parse(a));
+            return profilesList;
+        }
+        public List<Triple<int, int, int>> GetTopicsSpecialVariabilityProfiles()
+        {
+            List<Triple<int, int, int>> profilesList = new List<Triple<int, int, int>>();
+            string profiles = TopicsVariabilityProfile;
+            string pattern = 
+                @"\(\s*(?'portion'\d+)\s*,\s*(?'varstart'\d+)\s*\-\s*(?'varend'\d+)\)";
+            Regex re = new Regex(pattern);
+            MatchCollection mc = re.Matches(profiles);
+            foreach (Match m in mc)
+            {
+                int portion = int.Parse(m.Groups["portion"].Value);
+                int varstart = int.Parse(m.Groups["varstart"].Value);
+                int varend = int.Parse(m.Groups["varend"].Value);
+                profilesList.Add(new Triple<int, int, int>(portion, varstart, varend));
+            }
             return profilesList;
         }
 

@@ -56,8 +56,8 @@ namespace DCF.DemoRules
                 "UserID int(11) unsigned NOT NULL PRIMARY KEY, " +
                 "Belief double NOT NULL, " +
                 "Version int(11) NULL, " +
-                "NumOfFacts int(11) NOT NULL, " +
-                "FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
+                "NumOfFacts int(11) NOT NULL " +
+                // ", FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
                 ") ENGINE = MyISAM",
                 TableConstants.UserScores));
 
@@ -91,7 +91,8 @@ namespace DCF.DemoRules
                 //"FactValue varchar(500) COLLATE utf8_bin NOT NULL, " +
 
                 "PRIMARY KEY(ItemID), " +
-                "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
+                //"FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
+                "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE, " +
                 "FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE " +
                 ") ENGINE = MyISAM",
                 TableConstants.ScoredFacts));
@@ -184,7 +185,7 @@ namespace DCF.DemoRules
 
                         // update users with the proportion of facts that survived this repair key operation
 
-                        NewScoreCalculation();
+                        NewScoreCalculation(SqlUtils);
                         //OriginalScoreCalculation();
 
                         CalculateQuality(SqlUtils);
@@ -211,10 +212,10 @@ namespace DCF.DemoRules
             return qualityRes;
         }
 
-        private void NewScoreCalculation()
+        public static void NewScoreCalculation(MySqlUtils sqlUtils)
         {
             // this works but not converges
-            SqlUtils.ExecuteNonQuery(string.Format(
+            sqlUtils.ExecuteNonQuery(string.Format(
                 "UPDATE {0} us " +
                 "SET us.Belief=((1-{3})*us.Belief + " +
                 "{3}*(SELECT COUNT(*) FROM {1} rk, {2} im " +

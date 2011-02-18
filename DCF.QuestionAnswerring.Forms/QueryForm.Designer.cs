@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(QueryForm));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this._splitContQuery = new System.Windows.Forms.SplitContainer();
             this._flowLayoutPanelQueryText = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
@@ -68,7 +69,7 @@
             // 
             this._splitContQuery.Panel2.BackColor = System.Drawing.Color.Black;
             this._splitContQuery.Panel2.Controls.Add(this._dataGridViewQueryResults);
-            this._splitContQuery.Size = new System.Drawing.Size(690, 335);
+            this._splitContQuery.Size = new System.Drawing.Size(1184, 664);
             this._splitContQuery.SplitterDistance = 110;
             this._splitContQuery.TabIndex = 0;
             // 
@@ -82,19 +83,19 @@
             this._flowLayoutPanelQueryText.Controls.Add(this.comboBox1);
             this._flowLayoutPanelQueryText.Location = new System.Drawing.Point(3, 3);
             this._flowLayoutPanelQueryText.Name = "_flowLayoutPanelQueryText";
-            this._flowLayoutPanelQueryText.Size = new System.Drawing.Size(571, 98);
+            this._flowLayoutPanelQueryText.Size = new System.Drawing.Size(1070, 98);
             this._flowLayoutPanelQueryText.TabIndex = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Font = new System.Drawing.Font("Comic Sans MS", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.Yellow;
             this.label1.Location = new System.Drawing.Point(3, 6);
             this.label1.Margin = new System.Windows.Forms.Padding(3, 6, 3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(153, 19);
+            this.label1.Size = new System.Drawing.Size(350, 45);
             this.label1.TabIndex = 0;
             this.label1.Text = "The sample long text";
             // 
@@ -103,15 +104,15 @@
             this.comboBox1.BackColor = System.Drawing.Color.Black;
             this.comboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.comboBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboBox1.Font = new System.Drawing.Font("Comic Sans MS", 10F, System.Drawing.FontStyle.Bold);
+            this.comboBox1.Font = new System.Drawing.Font("Comic Sans MS", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBox1.ForeColor = System.Drawing.Color.White;
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
             "Example 1",
             "Example 2"});
-            this.comboBox1.Location = new System.Drawing.Point(162, 3);
+            this.comboBox1.Location = new System.Drawing.Point(359, 3);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 27);
+            this.comboBox1.Size = new System.Drawing.Size(287, 53);
             this.comboBox1.TabIndex = 1;
             this.comboBox1.Text = "Text";
             // 
@@ -122,7 +123,7 @@
             this._panelQueryButtons.BackColor = System.Drawing.Color.Transparent;
             this._panelQueryButtons.Controls.Add(this._btnDone);
             this._panelQueryButtons.Controls.Add(this._btnQuery);
-            this._panelQueryButtons.Location = new System.Drawing.Point(580, 3);
+            this._panelQueryButtons.Location = new System.Drawing.Point(1074, 2);
             this._panelQueryButtons.Name = "_panelQueryButtons";
             this._panelQueryButtons.Size = new System.Drawing.Size(105, 103);
             this._panelQueryButtons.TabIndex = 0;
@@ -136,11 +137,12 @@
             this._btnDone.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DarkKhaki;
             this._btnDone.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Olive;
             this._btnDone.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnDone.Font = new System.Drawing.Font("Comic Sans MS", 10F, System.Drawing.FontStyle.Bold);
+            this._btnDone.Font = new System.Drawing.Font("Comic Sans MS", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._btnDone.ForeColor = System.Drawing.Color.White;
-            this._btnDone.Location = new System.Drawing.Point(5, 74);
+            this._btnDone.Location = new System.Drawing.Point(5, 63);
+            this._btnDone.Margin = new System.Windows.Forms.Padding(0, 0, 3, 3);
             this._btnDone.Name = "_btnDone";
-            this._btnDone.Size = new System.Drawing.Size(96, 28);
+            this._btnDone.Size = new System.Drawing.Size(96, 39);
             this._btnDone.TabIndex = 1;
             this._btnDone.Text = "Done";
             this._btnDone.UseVisualStyleBackColor = true;
@@ -155,11 +157,11 @@
             this._btnQuery.FlatAppearance.MouseDownBackColor = System.Drawing.Color.DarkKhaki;
             this._btnQuery.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Olive;
             this._btnQuery.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnQuery.Font = new System.Drawing.Font("Comic Sans MS", 10F, System.Drawing.FontStyle.Bold);
+            this._btnQuery.Font = new System.Drawing.Font("Comic Sans MS", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._btnQuery.ForeColor = System.Drawing.Color.White;
             this._btnQuery.Location = new System.Drawing.Point(5, 3);
             this._btnQuery.Name = "_btnQuery";
-            this._btnQuery.Size = new System.Drawing.Size(97, 63);
+            this._btnQuery.Size = new System.Drawing.Size(97, 54);
             this._btnQuery.TabIndex = 0;
             this._btnQuery.Text = "Query";
             this._btnQuery.UseVisualStyleBackColor = false;
@@ -178,7 +180,7 @@
             this._dataGridViewQueryResults.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.YellowGreen;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.DimGray;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Yellow;
@@ -187,7 +189,7 @@
             this._dataGridViewQueryResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Comic Sans MS", 10F);
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Comic Sans MS", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Silver;
             dataGridViewCellStyle2.Padding = new System.Windows.Forms.Padding(2);
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.DimGray;
@@ -201,13 +203,21 @@
             this._dataGridViewQueryResults.MultiSelect = false;
             this._dataGridViewQueryResults.Name = "_dataGridViewQueryResults";
             this._dataGridViewQueryResults.ReadOnly = true;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this._dataGridViewQueryResults.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this._dataGridViewQueryResults.RowHeadersVisible = false;
             this._dataGridViewQueryResults.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this._dataGridViewQueryResults.RowTemplate.Height = 44;
             this._dataGridViewQueryResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this._dataGridViewQueryResults.Size = new System.Drawing.Size(689, 222);
+            this._dataGridViewQueryResults.Size = new System.Drawing.Size(1179, 551);
             this._dataGridViewQueryResults.TabIndex = 0;
             this._dataGridViewQueryResults.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this._dataGridViewQueryResults_DataBindingComplete);
-            this._dataGridViewQueryResults.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this._dataGridViewQueryResults_CellContentClick);
             // 
             // QueryForm
             // 
@@ -216,9 +226,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.CancelButton = this._btnDone;
-            this.ClientSize = new System.Drawing.Size(690, 335);
+            this.ClientSize = new System.Drawing.Size(1184, 664);
             this.Controls.Add(this._splitContQuery);
             this.Name = "QueryForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Binded Title";
             this._splitContQuery.Panel1.ResumeLayout(false);
             this._splitContQuery.Panel2.ResumeLayout(false);

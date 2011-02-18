@@ -96,7 +96,8 @@ namespace DCF.DemoRules.Test
             m_sqlUtils = new MySqlNativeClientUtils(DBUsername, DBPassword, DBName, HostName);
             SqlUtils.Connect();
             Logger.TraceWriteLine(string.Format("Connected to {0}/{1}@{2} - {3}", DBUsername, DBPassword, DBName, HostName));
-            m_cleansingManager = new CleansingManager(new PaperRuleProvider(SqlUtils));
+            // TODO Demo m_cleansingManager = new CleansingManager(new PaperRuleProvider(SqlUtils));
+            m_cleansingManager = new CleansingManager(new OfflineCleaningRuleProvider(SqlUtils));
 
             // remove previous run data
             try
@@ -126,8 +127,15 @@ namespace DCF.DemoRules.Test
                 "(select count(*) from ({0}) d, correctfacts c where c.itemid=d.itemid) / " +
                 "(select count(*) from ({0}) e) as Quality", innerSelect
             );
-            object qualityRes = SqlUtils.ExecuteScalar(qualityMeasurement);
-            Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
+            try
+            {
+                object qualityRes = SqlUtils.ExecuteScalar(qualityMeasurement);
+                Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
+            }
+            catch (MySqlException)
+            {
+                Logger.TraceWriteLine("Correct facts are missing");
+            }
         }
 
         public void FinishFlow()

@@ -39,14 +39,23 @@
             this._lboxQuestions.SelectedIndexChanged += new System.EventHandler(this._lboxQuestions_SelectedIndexChanged);
             this._lboxQuestions.DoubleClick += new System.EventHandler(this._lboxQuestions_DoubleClick);
             // 
+            // _btnCreateNew
+            // 
+            this._btnCreateNew.FlatAppearance.BorderColor = System.Drawing.Color.Olive;
+            this._btnCreateNew.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this._btnCreateNew.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DarkKhaki;
+            // 
             // _btnOpen
             // 
+            this._btnOpen.FlatAppearance.BorderColor = System.Drawing.Color.Olive;
+            this._btnOpen.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this._btnOpen.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DarkKhaki;
             this._btnOpen.Click += new System.EventHandler(this._btnOpen_Click);
             // 
             // MainFormMySql
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(603, 405);
+            this.ClientSize = new System.Drawing.Size(1184, 764);
             this.Name = "MainFormMySql";
             this.Load += new System.EventHandler(this.MainFormMySql_Load);
             this.ResumeLayout(false);
