@@ -18,8 +18,6 @@ namespace DCF.PaperRules
             m_ruleExecuter += new RuleExecuterDelegate(TwoEstimateMethod);
             m_ruleInitializer += new RuleExecuterDelegate(internalInit);
             Id = TwoEstimateStr;
-            InvolvedTables = new List<string>(new string[] { TableConstants.UserScores, TableConstants.BelievedUsers });
-            AffectedTables = new List<string>(new string[] { TableConstants.BelievedUsers });
         }
         void internalInit(Dictionary<string, object> dataHashTable)
         {

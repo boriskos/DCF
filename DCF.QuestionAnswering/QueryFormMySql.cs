@@ -92,19 +92,6 @@ namespace DCF.QuestionAnswering
             } 
         }
 
-        //protected override void _dataGridViewQueryResults_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        //{
-        //    base._dataGridViewQueryResults_DataBindingComplete(sender, e);
-        //    foreach (DataGridViewRow row in _dataGridViewQueryResults.Rows)
-        //    {
-        //        DataRowView dr = row.DataBoundItem as DataRowView;
-        //        double cur = Convert.ToDouble(dr[1]);
-        //        if (cur < m_minScore) m_minScore = cur;
-        //        if (cur > m_maxScore) m_maxScore = cur;
-        //    }
-
-        //}
-
         private ControlInfo m_labelInfo;
         private ControlInfo m_comboBoxInfo;
         private string m_tableName;
@@ -128,6 +115,7 @@ namespace DCF.QuestionAnswering
                 if (cur < m_minScore) m_minScore = cur;
                 if (cur > m_maxScore) m_maxScore = cur;
             }
+            m_rowsNum = ds.Tables[0].Rows.Count;
 
             _dataGridViewQueryResults.DataSource = ds.Tables[0];
             _dataGridViewQueryResults.Focus();
@@ -140,10 +128,10 @@ namespace DCF.QuestionAnswering
             {
                 double d = Convert.ToDouble(e.Value);
                 //double normalized = (d - m_minScore) / (m_maxScore - m_minScore);
-                double normalized = d;
-                if (m_maxScore > 1000 * double.Epsilon) 
-                    normalized /= m_maxScore;
-                
+                //double normalized = d;
+                //if (m_maxScore > 1000 * double.Epsilon) 
+                //    normalized /= m_maxScore;
+                double normalized = 1.0 - (e.RowIndex + 0.5) / m_rowsNum;
                 //e.CellStyle.BackColor = Color.FromArgb(20, (int)(150 * normalized * normalized + 25), 20);
                 e.CellStyle.BackColor = Color.FromArgb( 
                     (int)( Color.Olive.R * normalized ),
@@ -152,9 +140,11 @@ namespace DCF.QuestionAnswering
                     );
                 e.CellStyle.ForeColor = Color.Yellow;
 
-                e.CellStyle.SelectionBackColor = Color.FromArgb(10, (int)(200 * normalized * normalized + 55), 10);
+                //e.CellStyle.SelectionBackColor = Color.FromArgb(10, (int)(200 * normalized * normalized + 55), 10);
+                e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
                 e.CellStyle.SelectionForeColor = Color.Yellow;
-                e.Value = Math.Round(normalized, 4);
+                //e.Value = Math.Round(normalized, 4);
+                e.Value = Math.Round(d, 4);
             }
         }
 
@@ -166,8 +156,10 @@ namespace DCF.QuestionAnswering
             comboBox1.Size = new Size((int)g.MeasureString(comboBox1.Text, font).Width + 20, comboBox1.Size.Height);
         }
 
+        //private Color [] m_10_bins = { Color.Black, Color.
         private double m_minScore = Double.MaxValue;
         private double m_maxScore = Double.MinValue;
+        private int m_rowsNum = 0;
 
     }
 }

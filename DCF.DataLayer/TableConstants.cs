@@ -16,13 +16,6 @@ namespace DCF.DataLayer
         public const string UserScores = "userscores";
         public const string UserScoresHistory = "userscoreshistory";
         public const string Users = "users_v";
-        public const string BelievedUsers = "believedusers";
-        public const string UserCapitals = "usercapitals";
-        public const string WikiCities = "wikicities";
-        public const string CleanCities = "cleancities";
-        public const string WrongCities = "wrongcities";
-        public const string CorrectCities = "correctcities";
-        public const string EncodedUserCapitals = "encodedusercapitals";
         public const string AbsoluteUserScoresView = "absoluteuserscores_view";
         public const string ScoredFacts = "scoredfacts";
         public const string ScoredFactsView = "scoredfacts_view";

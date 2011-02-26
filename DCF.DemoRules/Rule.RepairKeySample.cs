@@ -25,9 +25,6 @@ namespace DCF.DemoRules
             m_ruleExecuter += new RuleExecuterDelegate(SampleWithJoin);
             m_ruleInitializer += new RuleExecuterDelegate(internalInit);
             Id = "RepairKeySample";
-            InvolvedTables = new List<string>(new string[] { 
-                TableConstants.UserCapitals, TableConstants.EncodedUserCapitals });
-            AffectedTables = new List<string>();
             PrerequisiteRules = new List<DCF.Lib.Rule>();
         }
 
@@ -198,18 +195,26 @@ namespace DCF.DemoRules
 
         public static object CalculateQuality(MySqlUtils sqlUtils)
         {
-            string innerSelect =
-                "select a.* from scoredfacts a, " +
-                "(SELECT topicid, max(Score) as score FROM scoredfacts group by topicid) b " +
-                "where a.topicid = b.topicid and a.score = b.score group by a.topicid";
-            string qualityMeasurement = string.Format(
-                "select " +
-                "(select count(*) from ({0}) d, correctfacts c where c.itemid=d.itemid) / " +
-                "(select count(*) from ({0}) e) as Quality", innerSelect
-            );
-            object qualityRes = sqlUtils.ExecuteScalar(qualityMeasurement);
-            Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
-            return qualityRes;
+            try
+            {
+                string innerSelect =
+                    "select a.* from scoredfacts a, " +
+                    "(SELECT topicid, max(Score) as score FROM scoredfacts group by topicid) b " +
+                    "where a.topicid = b.topicid and a.score = b.score group by a.topicid";
+                string qualityMeasurement = string.Format(
+                    "select " +
+                    "(select count(*) from ({0}) d, correctfacts c where c.itemid=d.itemid) / " +
+                    "(select count(*) from ({0}) e) as Quality", innerSelect
+                );
+                object qualityRes = sqlUtils.ExecuteScalar(qualityMeasurement);
+                Logger.TraceWriteLine(string.Format("The quality of the run is {0}", qualityRes.ToString()));
+                return qualityRes;
+            }
+            catch (Exception)
+            {
+                Logger.TraceWriteLine("No correct facts");
+            }
+            return 0;
         }
 
         public static void NewScoreCalculation(MySqlUtils sqlUtils)

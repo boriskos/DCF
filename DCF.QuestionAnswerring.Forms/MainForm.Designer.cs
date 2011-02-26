@@ -176,14 +176,13 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._lboxQuestions.BackColor = System.Drawing.Color.Black;
-            this._lboxQuestions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this._lboxQuestions.Font = new System.Drawing.Font("Comic Sans MS", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._lboxQuestions.ForeColor = System.Drawing.Color.White;
             this._lboxQuestions.FormattingEnabled = true;
             this._lboxQuestions.ItemHeight = 40;
             this._lboxQuestions.Location = new System.Drawing.Point(0, 48);
             this._lboxQuestions.Name = "_lboxQuestions";
-            this._lboxQuestions.Size = new System.Drawing.Size(387, 562);
+            this._lboxQuestions.Size = new System.Drawing.Size(387, 524);
             this._lboxQuestions.TabIndex = 0;
             // 
             // _tbDescription
@@ -192,7 +191,6 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this._tbDescription.BackColor = System.Drawing.Color.Black;
-            this._tbDescription.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this._tbDescription.Cursor = System.Windows.Forms.Cursors.IBeam;
             this._tbDescription.Font = new System.Drawing.Font("Comic Sans MS", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._tbDescription.ForeColor = System.Drawing.Color.White;

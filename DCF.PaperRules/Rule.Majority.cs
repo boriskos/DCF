@@ -18,9 +18,6 @@ namespace DCF.PaperRules
             m_ruleInitializer += new RuleExecuterDelegate(internalInit);
             m_ruleExecuter += new RuleExecuterDelegate(MajorityFunc);
             Id = "MajorityRule";
-            InvolvedTables = new List<string>(new string[] { 
-                TableConstants.UserCapitals, TableConstants.ScoredFacts});
-            AffectedTables = new List<string>() { TableConstants.ScoredFacts };
             PrerequisiteRules = new List<Rule>(0);
         }
 
