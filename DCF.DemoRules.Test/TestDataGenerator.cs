@@ -193,7 +193,7 @@ namespace DCF.DemoRules.Test
                     Logger.Assert(j++ < topicsCount, "Topic Count is less than number of Topic Restrictions");
                     // get next unrestricted topic
                     int nextTopic;
-                    while (restrictedTopics.ContainsKey(nextTopic = rndTopics.Next(topicsCount))) ;
+                    while (restrictedTopics.ContainsKey(nextTopic = (1 + rndTopics.Next(topicsCount)))) ;
                     restrictedTopics[nextTopic] = pair.Second;
                     Logger.TraceWrite(string.Format("{0}, ", nextTopic));
                 }
