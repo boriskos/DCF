@@ -19,4 +19,4 @@ insert into `demo`.`itemsmentions`  (userid, itemid, topicid) values
 ('u8@a.c',9,3),
 ('u9@a.c',9,3),
 ('u10@a.c',9,3),
-('smart@a.c',9,3)
+('smart@a.c',9,3);

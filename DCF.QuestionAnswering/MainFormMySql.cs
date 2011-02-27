@@ -68,7 +68,8 @@ namespace DCF.QuestionAnswering
                     currentRow["FormQuestionText"].ToString(),
                     currentRow["ParamsTableName"].ToString(),
                     currentRow["ParamsColNames"].ToString(),
-                    currentRow["QueryBody"].ToString());
+                    currentRow["QueryBody"].ToString(),
+                    (TopicType)Convert.ToInt32(currentRow["TopicType"]));
                 qf.ShowDialog(this);
             }
 

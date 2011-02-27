@@ -23,6 +23,7 @@ CREATE TABLE `queryforms` (
   `ParamsTableName` varchar(45) COLLATE latin1_bin DEFAULT NULL,
   `ParamsColNames` varchar(250) COLLATE latin1_bin DEFAULT NULL,
   `QueryBody` varchar(1000) COLLATE latin1_bin DEFAULT NULL,
+  `TopicType` int(1) unsigned zerofill NOT NULL DEFAULT '0' COMMENT 'Possilbe values 0 - single correct 1 - multiple correct answers',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin 
 COMMENT='Keeps information that describes Question Answering forms'$$
