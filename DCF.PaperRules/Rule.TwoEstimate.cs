@@ -25,7 +25,7 @@ namespace DCF.PaperRules
         }
         private void PrepareDb()
         {
-            RepairKeySample.PrepareDb(SqlUtils, Category);
+            RepairKeySample.PrepareDb(SqlUtils, Category, TopicType.SingleAnswer);
 
             // create helping view of facts scores and items mentions
             SqlUtils.ExecuteNonQuery(string.Format(

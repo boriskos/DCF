@@ -28,7 +28,8 @@ namespace DCF.DemoRules
         {
             return new List<DCF.Lib.Rule>() 
             { 
-                new SingleIterationMultiAnswersRule(m_sqlUstils, this, "Original"),
+                new SingleIterationMultiAnswersRule(m_sqlUstils, this, "Demo"),
+                new SingleIterationSingleAnswersRule(m_sqlUstils, this, "Demo")
             };
         }
 

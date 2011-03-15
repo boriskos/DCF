@@ -51,7 +51,7 @@ namespace DCF.PaperRules
                     list.Add(new DanielConvergence(m_sqlUstils, this));
                     break;
                 default:
-                    throw new System.Configuration.ConfigurationException("Invalid Experiment value " +
+                    throw new System.Configuration.ConfigurationErrorsException("Invalid Experiment value " +
                         CleaningConfiguration.Instance.ExperimentType.ToString());
             }
             return list;

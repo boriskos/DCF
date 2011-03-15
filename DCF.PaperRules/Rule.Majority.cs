@@ -23,7 +23,7 @@ namespace DCF.PaperRules
 
         void internalInit(Dictionary<string, object> dataHashTable)
         {
-            RepairKeySample.PrepareDb(SqlUtils, Category);
+            RepairKeySample.PrepareDb(SqlUtils, Category, TopicType.SingleAnswer);
         }
 
         void MajorityFunc(Dictionary<string, object> data)
@@ -34,7 +34,7 @@ namespace DCF.PaperRules
                 Logger.DebugWriteLine("In MajorityRepairKey.", Logger.RulesStr);
                 Logger.DebugIndent();
 
-                RepairKeySample.CalculateFactScores(SqlUtils, Category);
+                RepairKeySample.CalculateFactScores(SqlUtils, Category, TopicType.SingleAnswer);
 
                 OnStopCleaningProcess();
                 Logger.DebugUnindent();

@@ -52,6 +52,7 @@
     <Compile Include="Rule.RepairKeySample.cs" />
     <Compile Include="Rule.DanielConvergence.cs" />
     <Compile Include="SingleIterationMultiAnswersRule.cs" />
+    <Compile Include="SingleIterationSingleAnswersRule.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DCF.DataLayerAwareLib\DCF.DataLayerAwareLib.csproj">

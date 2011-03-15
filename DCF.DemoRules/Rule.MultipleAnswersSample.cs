@@ -34,69 +34,7 @@ namespace DCF.DemoRules
 
         private void PrepareDb()
         {
-            ///////////////////////////////////////////////
-            // reinitiate the Users Scores table
-            // for each user from table of Users create 
-            // posititve and negative rows
-
-            SqlUtils.ExecuteNonQuery(string.Format(
-                "CREATE TABLE IF NOT EXISTS {0} ( " +
-                "UserID int(11) unsigned NOT NULL PRIMARY KEY, " +
-                "Belief double NOT NULL, " +
-                "Version int(11) NULL, " +
-                "NumOfFacts int(11) NOT NULL " +
-                //", FOREIGN KEY usUserID_fkey (UserID) REFERENCES Users (UserID) ON DELETE CASCADE" +
-                ") ENGINE = MyISAM",
-                TableConstants.UserScores));
-
-            // new users creation in the userscores table
-            SqlUtils.ExecuteNonQuery(string.Format(
-                "INSERT INTO {0} (UserId, Belief, Version, NumOfFacts) " +
-                "(SELECT u.UserID as UserId, {2} as Belief, 1 as Version, " +
-                "0 as NumOfFacts FROM {1} u " +
-                "WHERE u.UserID NOT IN (SELECT us.UserId FROM {0} us))",
-                TableConstants.UserScores, TableConstants.Users, BeliefInitialValue,
-                TableConstants.ItemsMentions));
-
-            // update users number of facts and zero Version
-            SqlUtils.ExecuteNonQuery(string.Format(
-                "UPDATE {0} us,  (SELECT im.UserID, COUNT(*) as NumOfItems FROM {1} im GROUP BY im.UserID) s " +
-                "SET us.NumOfFacts = s.NumOfItems, Version=1 " +
-                "WHERE s.UserID=us.UserID",
-                TableConstants.UserScores, TableConstants.ItemsMentions));
-
-            ////////////////////////////////////////////////////
-            // creation and initiallization of scored facts table
-            SqlUtils.ExecuteNonQuery(string.Format(
-                "CREATE TABLE IF NOT EXISTS {0} ( " +
-                "ItemID INT(11) unsigned NOT NULL, " +
-                "TopicID INT(11) unsigned NOT NULL, " +
-                "Factor int(11) NOT NULL, " +
-                "Score DOUBLE NOT NULL, " +
-                "Category varchar(70) COLLATE utf8_bin NOT NULL, " +
-                "Correctness TINYINT(1) NULL, " +
-
-                "PRIMARY KEY(ItemID), " +
-                //"FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (ItemID) ON DELETE CASCADE, " +
-                "FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE, " +
-                "FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE " +
-                ") ENGINE = MyISAM",
-                TableConstants.ScoredFacts));
-
-            // insert into ScoredFacts new facts
-            SqlUtils.ExecuteNonQuery(String.Format(
-                "INSERT INTO {0} (ItemId, TopicId, Category, Factor, Score) " +
-                "SELECT i.ItemId, i.TopicId, '{3}' AS Category, 0 AS Factor, 0 AS Score " +
-                "FROM {1} t, {2} i WHERE t.TopicId=i.TopicId AND t.Category = '{3}' " +
-                "AND i.ItemId NOT IN (SELECT ItemID FROM {0})",
-                TableConstants.ScoredFacts, TableConstants.Topics, TableConstants.Items, Category));
-
-            // update all facts Factor 
-            SqlUtils.ExecuteNonQuery(String.Format(
-                "UPDATE {0} sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM {1} im GROUP BY im.ItemId) s " +
-                "SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId",
-                TableConstants.ScoredFacts, TableConstants.ItemsMentions));
-
+            RepairKeySample.PrepareDb(SqlUtils, Category, TopicType.MultipleAnswers);
             //////////////////////////////////////////////
             // create temporary table for repair key operation resluts
             SqlUtils.ExecuteNonQuery(string.Format(
@@ -119,19 +57,7 @@ namespace DCF.DemoRules
                 // compute fact scores and normalize them
                 using (new PerformanceCounter(Id + "_Update"))
                 {
-                    string factScoreUpdate1 = string.Format(
-                        "UPDATE {0} sf SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM {1} us, {2} im " +
-                        "WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='{3}'), 0)",
-                        TableConstants.ScoredFacts, TableConstants.UserScores,
-                        TableConstants.ItemsMentions, Category);
-                    string factScoreUpdate2 = string.Format(
-                        "UPDATE {0} sf, (SELECT SUM(sf1.Score) AS TopicScore, sf1.TopicId " +
-                        "FROM {0} sf1 WHERE sf1.Category = '{1}' GROUP BY sf1.TopicId) cs " +
-                        "SET sf.Score = sf.Score / cs.TopicScore " +
-                        "WHERE sf.TopicId = cs.TopicId AND sf.Category='{1}' AND cs.TopicScore <> 0",
-                        TableConstants.ScoredFacts, Category);
-                    SqlUtils.ExecuteNonQuery(factScoreUpdate1);
-                    SqlUtils.ExecuteNonQuery(factScoreUpdate2);
+                    RepairKeySample.CalculateFactScores(SqlUtils, Category, TopicType.MultipleAnswers);
                 }
 
                 DataSet scoredFactsDs = new DataSet();
@@ -140,9 +66,10 @@ namespace DCF.DemoRules
                     // join these scores with encoded facts by user
                     SqlUtils.ExecuteQuery(string.Format(
                         "SELECT sf.ItemId, sf.TopicId, sf.Score, sf.Factor, c.Correctness "+
-                        "FROM {0} sf, (select 0 as Correctness union select 1 as Correctness) c " +
-                        "WHERE sf.Category='{1}'",
-                        TableConstants.ScoredFacts, Category), scoredFactsDs);
+                        "FROM {0} sf, {1} t, (select 0 as Correctness union select 1 as Correctness) c " +
+                        "WHERE sf.Category='{2}' AND sf.TopicId=t.TopicId AND t.TopicType={3}",
+                        TableConstants.ScoredFacts, TableConstants.Topics, Category, (int)TopicType.MultipleAnswers ), 
+                        scoredFactsDs);
                 }
 
                 // at random (by the fact score) believe or disbelieve the fact

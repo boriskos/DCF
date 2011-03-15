@@ -35,7 +35,7 @@ namespace DCF.DemoRules
 
         void CosineConverged_m_ruleInitializer(Dictionary<string, object> dataHashTable)
         {
-            SqlUtils.DropTableIfExists(TableConstants.UserScoresHistory);
+            //SqlUtils.DropTableIfExists(TableConstants.UserScoresHistory);
             string createUserHistoryTable = string.Format(
                 "CREATE TABLE IF NOT EXISTS {0} ( " +
                 "Version INT(11) NOT NULL, " +

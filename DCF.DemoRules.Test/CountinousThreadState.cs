@@ -24,6 +24,8 @@ namespace DCF.DemoRules.Test
                 dcm.ParseArgs(m_args.Skip(1).ToArray());
                 dcm.InitFlow();
                 int iteration = 0;
+                CleansingManager offline =
+                    new CleansingManager(new OfflineCleaningRuleProvider(dcm.SqlUtils));
                 while (m_exit_thread == false)
                 {
                     Logger.DebugWrite(string.Format("Thread is going to sleep at {0}...", 
@@ -31,27 +33,31 @@ namespace DCF.DemoRules.Test
                     Thread.Sleep(1000);
                     Logger.DebugWriteLine(string.Format("back at {0}", DateTime.Now.ToLongTimeString()));
                     if (m_exit_thread) break;
-                    if (0 == iteration++ % 120) // 2 minutes
+
+                    // always clean: offline.cleanData(null);
+
+                    if (0 == iteration++ % 10) // 2 minutes
                     { // full cleanup
+
+                        timestamp = DateTime.Now;
                         Logger.DebugWriteLine("Full cleaning");
-                        CleansingManager offline = 
-                            new CleansingManager(new OfflineCleaningRuleProvider(dcm.SqlUtils));
                         offline.cleanData(null);
                     }
                     else
                     { // incremental cleanup
                         DateTime cur = DateTime.Now;
-                        object res = dcm.SqlUtils.ExecuteScalar( string.Format(
-                            "select count(*) from itemsmentions where time > timestamp('{0}')", 
+                        object res = dcm.SqlUtils.ExecuteScalar(string.Format(
+                            "select count(*) from itemsmentions where time > timestamp('{0}')",
                             timestamp.ToString("s")));
                         long num = (long)res;
-                        if ( num > 0)
+                        if (num > 0)
                         {
                             Logger.TraceWriteLine("Incremental cleaning");
                             timestamp = cur;
-                            CleansingManager online =
-                                new CleansingManager(new OnlineCleaningRuleProvider(dcm.SqlUtils));
-                            online.cleanData(null);
+                            //CleansingManager online =
+                            //    new CleansingManager(new OnlineCleaningRuleProvider(dcm.SqlUtils));
+                            //online.cleanData(null);
+                            offline.cleanData(null);
                         }
                     }
                 }

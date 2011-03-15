@@ -7,13 +7,13 @@ using DCF.Lib;
 
 namespace DCF.DemoRules
 {
-    public class SingleIterationMultiAnswersRule : MultipleAnswersSample
+    public class SingleIterationSingleAnswersRule: RepairKeySample
     {
-        public SingleIterationMultiAnswersRule(MySqlUtils sqlUtils, IRuleSupplier ruleSupplier, string category) :
+        public SingleIterationSingleAnswersRule(MySqlUtils sqlUtils, IRuleSupplier ruleSupplier, string category) :
             base(sqlUtils, ruleSupplier, category)
         { }
 
-        public override void SampleWithJoin(Dictionary<string, object> data)
+        protected override void SampleWithJoin(Dictionary<string, object> data)
         {
             base.SampleWithJoin(data);
             OnStopCleaningProcess(); // stop iterating after first cycle

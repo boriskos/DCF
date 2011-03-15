@@ -60,14 +60,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DB Scripts\astellas_export.sql" />
     <None Include="DB Scripts\CreateAllTables.mysql" />
     <None Include="DB Scripts\CreateCorrectFactsTable.mysql" />
     <None Include="DB Scripts\CreateItemsMentionsTable.mysql" />
     <None Include="DB Scripts\CreateItemsTable.mysql" />
     <None Include="DB Scripts\CreateQueryFormsTable.mysql" />
     <None Include="DB Scripts\CreateViews.mysql" />
-    <None Include="DB Scripts\db_structure_export.sql" />
     <None Include="DB Scripts\PopulateQueryForms.mysql" />
     <None Include="DB Scripts\PopulateUsersFromGuess.mysql" />
     <None Include="DB Scripts\zCreateScoredFactsTable.mysql" />

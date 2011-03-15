@@ -30,8 +30,8 @@ namespace DCF.DemoRules
         {
             return new List<DCF.Lib.Rule>() 
             { 
-                new RepairKeySample(m_sqlUstils, this, "Demo"),
-                //new MultipleAnswersSample(m_sqlUstils, this, "Original"),
+                new MultipleAnswersSample(m_sqlUstils, this, CleaningConfiguration.Instance.TopicCategory),
+                new RepairKeySample(m_sqlUstils, this, CleaningConfiguration.Instance.TopicCategory),
                 new DanielConvergence(m_sqlUstils, this)
             };
         }

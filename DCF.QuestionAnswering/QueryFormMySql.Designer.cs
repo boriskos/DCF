@@ -42,6 +42,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(1184, 664);
             this.Name = "QueryFormMySql";
+            this.Shown += new System.EventHandler(this.QueryFormMySql_Shown);
             this.ResumeLayout(false);
 
         }

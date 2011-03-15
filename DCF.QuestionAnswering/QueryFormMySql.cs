@@ -1,6 +1,4 @@
-﻿#define FORECOLORCHANGE
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -38,7 +36,6 @@ namespace DCF.QuestionAnswering
             m_comboBoxInfo.Margins =    _flowLayoutPanelQueryText.Controls[1].Margin;
             m_comboBoxInfo.BackColor =  _flowLayoutPanelQueryText.Controls[1].BackColor;
             m_comboBoxInfo.Size =       _flowLayoutPanelQueryText.Controls[1].Size;
-
 
             // clear
             _flowLayoutPanelQueryText.Controls.Clear();
@@ -90,23 +87,13 @@ namespace DCF.QuestionAnswering
                     DataSource = ds.Tables[0],
                     DisplayMember = m_paramNames[curParamInd],
                     Margin = m_comboBoxInfo.Margins,
-                    DropDownWidth = 150
+                    DropDownWidth = 300
                 };
                 cb.SelectedValueChanged += new EventHandler(comboBox_SelectedValueChanged);
                 m_cbList.Add(cb);
                 _flowLayoutPanelQueryText.Controls.Add(cb);
             } 
         }
-
-        private ControlInfo m_labelInfo;
-        private ControlInfo m_comboBoxInfo;
-        private string m_tableName;
-        private string[] m_paramNames;
-        private MySqlUtils m_sqlUtils;
-        private string m_queryBody;
-        private TopicType m_topicType;
-        private List<BBBNOVA.BNComboBox> m_cbList = new List<BBBNOVA.BNComboBox>();
-
         private void _btnQuery_Click(object sender, EventArgs e)
         {
             m_minScore = Double.MaxValue;
@@ -134,39 +121,21 @@ namespace DCF.QuestionAnswering
             if (m_table.Columns[e.ColumnIndex].ColumnName.Contains("onfidence") )
             {
                 double d = Convert.ToDouble(e.Value);
-                double normalized = (d - m_minScore);
-                if (normalized > 0) normalized /= (m_maxScore - m_minScore);
+                double normalized = d;
+                // make normalization only for multiple answers
+                if (m_topicType == TopicType.MultipleAnswers)
+                {
+                    normalized = (d - m_minScore);
+                    if (normalized > 0) normalized /= (m_maxScore - m_minScore);
 
-                if (m_minScore == m_maxScore) normalized = 1;
+                    if (m_minScore == m_maxScore) normalized = 1;
+                }
 
-                // double normalized = d;
-                //if (m_maxScore > 1000 * double.Epsilon)
-                //    normalized /= m_maxScore;
-
-                //e.CellStyle.BackColor = Color.FromArgb(20, (int)(150 * normalized * normalized + 25), 20);
-                //e.CellStyle.BackColor = Color.FromArgb( 
-                //    (int)( Color.Olive.R * normalized ),
-                //    (int)( Color.Olive.G * normalized ),
-                //    (int)( Color.Olive.B * normalized )
-                //    );
-#if FORECOLORCHANGE
-                e.CellStyle.BackColor = Color.Black;
-                e.CellStyle.ForeColor = m_3_bins[(int)(2.99 * normalized)];
-#else
-                e.CellStyle.BackColor = m_3_bins[(int)(2.99 * normalized)];
+                e.CellStyle.BackColor = m_3_bins[(int)(2.9999 * normalized)];
                 e.CellStyle.ForeColor = Color.Beige;
-#endif
-                //e.CellStyle.SelectionBackColor = Color.FromArgb(10, (int)(200 * normalized * normalized + 55), 10);
                 e.CellStyle.SelectionBackColor = e.CellStyle.BackColor;
                 e.CellStyle.SelectionForeColor = e.CellStyle.ForeColor;
-                if (m_topicType == TopicType.SingleAnswer)
-                {
-                    e.Value = Math.Round(d, 4);
-                }
-                else
-                {
-                    e.Value = Math.Round(normalized, 4);
-                }
+                e.Value = string.Format("{0:F2}%",Math.Round(normalized, 4)*100);
             }
         }
 
@@ -176,15 +145,43 @@ namespace DCF.QuestionAnswering
             Font font = comboBox1.Font;
             Graphics g = comboBox1.CreateGraphics();
             comboBox1.Size = new Size((int)g.MeasureString(comboBox1.Text, font).Width + 20, comboBox1.Size.Height);
+            _btnQuery_Click(null, null);
         }
-#if FORECOLORCHANGE
-        private Color[] m_3_bins = { Color.Red, Color.Blue, Color.Green };
-#else
-        private Color[] m_3_bins = { Color.FromArgb(248, 105, 107), Color.FromArgb(49, 132, 155), Color.FromArgb(99,190,123) };
-#endif
+
+        private void QueryFormMySql_Shown(object sender, EventArgs e)
+        {
+            _btnQuery_Click(null, null);
+        }
+
+        private Color[] m_3_bins = { 
+                                       // red
+                                       //Color.FromArgb(248, 105, 107), 
+                                       Color.FromArgb(218,0,0),
+
+                                       // yellow
+                                       // Color.FromArgb(49, 132, 155), 
+                                       // Color.FromArgb(222, 144, 0), 
+                                       //Color.FromArgb(237, 187, 5), 
+                                       Color.FromArgb(231, 166, 3), 
+
+                                       // green
+                                       //Color.FromArgb(99,190,123) 
+                                       Color.FromArgb(0,168,0) 
+                                   };
+
         private double m_minScore = Double.MaxValue;
         private double m_maxScore = Double.MinValue;
         private int m_rowsNum = 0;
         private DataTable m_table;
+
+
+        private ControlInfo m_labelInfo;
+        private ControlInfo m_comboBoxInfo;
+        private string m_tableName;
+        private string[] m_paramNames;
+        private MySqlUtils m_sqlUtils;
+        private string m_queryBody;
+        private TopicType m_topicType;
+        private List<BBBNOVA.BNComboBox> m_cbList = new List<BBBNOVA.BNComboBox>();
     }
 }

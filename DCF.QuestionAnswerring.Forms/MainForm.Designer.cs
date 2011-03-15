@@ -182,7 +182,7 @@
             this._lboxQuestions.ItemHeight = 40;
             this._lboxQuestions.Location = new System.Drawing.Point(0, 48);
             this._lboxQuestions.Name = "_lboxQuestions";
-            this._lboxQuestions.Size = new System.Drawing.Size(387, 524);
+            this._lboxQuestions.Size = new System.Drawing.Size(387, 564);
             this._lboxQuestions.TabIndex = 0;
             // 
             // _tbDescription

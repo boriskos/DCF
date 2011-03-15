@@ -18,15 +18,19 @@ namespace DCF.Lib
         }
         public void cleanData(IEnumerable<string> involvedTableNames)
         {
+            m_stopSampling = false;
+            m_dataIsClean = false;
+            int prevIteration = CurrentIteration;
             for (int i = 0; i < CleaningConfiguration.Instance.MaxSampleIterations && !m_stopSampling; i++)
             {
-                CurrentIteration = i;
-                Logger.DebugWriteLine("Sample " + i.ToString(), Logger.CleaningDataStr);
+                CurrentIteration = prevIteration + i;
+                Logger.DebugWriteLine("Sample " + CurrentIteration.ToString(), Logger.CleaningDataStr);
                 cleanDataSample(involvedTableNames);
                 Logger.DebugWriteLine("");
                 Logger.DebugFlush();
             }
-            Logger.TraceWriteLine(string.Format("The cleaning finished after {0} iterations", CurrentIteration));
+            CurrentIteration = CurrentIteration + 1;
+            Logger.TraceWriteLine(string.Format("The cleaning finished after {0} iterations", CurrentIteration - prevIteration));
         }
 
         public int CurrentIteration { get; private set; }

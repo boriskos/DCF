@@ -30,7 +30,7 @@ namespace DCF.DemoRules
 
         void internalInit(Dictionary<string, object> dataHashTable)
         {
-            PrepareDb(SqlUtils, Category);
+            PrepareDb(SqlUtils, Category, TopicType.SingleAnswer);
 
             //////////////////////////////////////////////
             // create temporary table for repair key operation resluts
@@ -41,7 +41,7 @@ namespace DCF.DemoRules
 
         }
 
-        public static void PrepareDb(MySqlUtils sqlUtils, string category)
+        public static void PrepareDb(MySqlUtils sqlUtils, string category, TopicType topicType)
         {
             ///////////////////////////////////////////////
             // reinitiate the Users Scores table
@@ -98,39 +98,45 @@ namespace DCF.DemoRules
             sqlUtils.ExecuteNonQuery(String.Format(
                 "INSERT INTO {0} (ItemId, TopicId, Category, Factor, Score) " +
                 "SELECT i.ItemId, i.TopicId, '{3}' AS Category, 0 AS Factor, 0 AS Score " +
-                "FROM {1} t, {2} i WHERE t.TopicId=i.TopicId AND t.Category = '{3}' " + 
+                "FROM {1} t, {2} i WHERE t.TopicId=i.TopicId AND t.Category = '{3}' AND t.TopicType={4} " + 
                 "AND i.ItemId NOT IN (SELECT ItemID FROM {0})",
-                TableConstants.ScoredFacts, TableConstants.Topics, TableConstants.Items, category));
+                TableConstants.ScoredFacts, TableConstants.Topics, TableConstants.Items, 
+                category, (int)topicType));
 
             // update all facts Factor 
             sqlUtils.ExecuteNonQuery(String.Format(
-                "UPDATE {0} sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM {1} im GROUP BY im.ItemId) s " +
-                "SET sf.FActor = s.Factor WHERE sf.ItemId = s.ItemId",
-                TableConstants.ScoredFacts, TableConstants.ItemsMentions));
+                "UPDATE {0} sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM {1} im, {2} t " +
+                "WHERE t.TopicId=im.TopicId AND t.TopicType={3} GROUP BY im.ItemId) s " +
+                "SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId",
+                TableConstants.ScoredFacts, TableConstants.ItemsMentions,
+                TableConstants.Topics, (int)topicType));
         }
 
         /// <summary>
         /// Applies majority on facts and normalizes their score
         /// </summary>
-        public static void CalculateFactScores(MySqlUtils sqlUtils, string category)
+        public static void CalculateFactScores(MySqlUtils sqlUtils, string category, TopicType topicType)
         {
             string factScoreUpdate1 = string.Format(
-                "UPDATE {0} sf SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM {1} us, {2} im " +
-                "WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='{3}'), 0)",
+                "UPDATE {0} sf, {3} t1 SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM {1} us, {2} im " + 
+                "WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='{4}'), 0) " +
+                "WHERE sf.TopicID=t1.TopicId AND t1.TopicType={5}",
                 TableConstants.ScoredFacts, TableConstants.UserScores,
-                TableConstants.ItemsMentions, category);
+                TableConstants.ItemsMentions, TableConstants.Topics,
+                category, (int)topicType);
             string factScoreUpdate2 = string.Format(
                 "UPDATE {0} sf, (SELECT SUM(sf1.Score) AS TopicScore, sf1.TopicId " +
-                "FROM {0} sf1 WHERE sf1.Category = '{1}' GROUP BY sf1.TopicId) cs " +
+                "FROM {0} sf1, {1} t WHERE sf1.Category = '{2}' AND sf1.TopicId=t.TopicId AND t.TopicType={3} " +
+                "GROUP BY sf1.TopicId) cs " +
                 "SET sf.Score = sf.Score / cs.TopicScore " +
-                "WHERE sf.TopicId = cs.TopicId AND sf.Category='{1}' AND cs.TopicScore <> 0",
-                TableConstants.ScoredFacts, category);
+                "WHERE sf.TopicId = cs.TopicId AND sf.Category='{2}' AND cs.TopicScore <> 0",
+                TableConstants.ScoredFacts, TableConstants.Topics, category, (int)topicType);
             sqlUtils.ExecuteNonQuery(factScoreUpdate1);
             sqlUtils.ExecuteNonQuery(factScoreUpdate2);
         }
 
 
-        void SampleWithJoin(Dictionary<string, object> data)
+        protected virtual void SampleWithJoin(Dictionary<string, object> data)
         {
             using (new PerformanceCounter(RulesLogger))
             using (new PerformanceCounter(Id))
@@ -143,7 +149,7 @@ namespace DCF.DemoRules
                 // Applies majority on facts and normalizes their score
                 using (new PerformanceCounter(Id + "_Update"))
                 {
-                    CalculateFactScores(SqlUtils, Category);
+                    CalculateFactScores(SqlUtils, Category, TopicType.SingleAnswer);
                 }
 
                 DataSet scoredFactsDs = new DataSet();
@@ -151,8 +157,10 @@ namespace DCF.DemoRules
                 {
                     // join these scores with encoded facts by user
                     SqlUtils.ExecuteQuery(string.Format(
-                        "SELECT * FROM {0} WHERE Category='{1}'",
-                        TableConstants.ScoredFacts, Category), scoredFactsDs);
+                        "SELECT sf.* FROM {0} sf, {1} t " +
+                        "WHERE sf.Category='{2}' AND sf.TopicId=t.TopicId AND t.TopicType={3}",
+                        TableConstants.ScoredFacts, TableConstants.Topics, Category, (int)TopicType.SingleAnswer), 
+                        scoredFactsDs);
                 }
 
                 // make sure the countries are distinct

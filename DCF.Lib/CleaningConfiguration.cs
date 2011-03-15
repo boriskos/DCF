@@ -33,6 +33,7 @@ namespace DCF.Lib
         public int ConversionSamplesCount { get; private set; }
         public double ConversionAlfa { get; private set; }
         public double ConversionTolerance { get; private set; }
+        public string TopicCategory { get; private set; }
 
         public int ExperimentType { get; private set; }
 
@@ -62,7 +63,14 @@ namespace DCF.Lib
                 PropertyInfo pi = typeof(CleaningConfiguration).GetProperty(settingName);
                 if (pi == null)
                     throw new ArgumentOutOfRangeException(string.Format("Error: Unknown parameter: {0}", settingName));
-                pi.SetValue(this, pi.PropertyType.GetMethod("Parse", m_sTypeOfString).Invoke(null, new object[] { value.ToString() }), null);
+                if (pi.PropertyType == typeof(string))
+                {
+                    pi.SetValue(this, value.ToString(), null);
+                }
+                else
+                {
+                    pi.SetValue(this, pi.PropertyType.GetMethod("Parse", m_sTypeOfString).Invoke(null, new object[] { value.ToString() }), null);
+                }
             }
             get
             {
@@ -80,6 +88,7 @@ namespace DCF.Lib
         private const string MaxSampleIterationsName = "MaxSampleIterations";
         private const string MaxCleaningIterationsPerSampleName = "MaxCleaningIterationsPerSample";
         private const string ExperimentName = "ExperimentType";
+        private const string TopicCategoryName = "TopicCategory";
 
         public static string[] SettingNames = {
                                                    ConversionSamplesCountName, 
@@ -88,7 +97,8 @@ namespace DCF.Lib
                                                    ConversionToleranceName,
                                                    MaxSampleIterationsName,
                                                    ExperimentName,
-                                                   MaxCleaningIterationsPerSampleName
+                                                   MaxCleaningIterationsPerSampleName,
+                                                   TopicCategoryName
                                                };
         private static Type[] m_sTypeOfString = new Type[] { typeof(string) };
         #region Singleton implementation
