@@ -65,15 +65,12 @@
                 SET sf.Score = sf.Score / cs.CountryScore WHERE sf.Country = cs.Country
               </NonQueryStatement>
             </PerformanceCounter>
-            <PerformanceCounter Name="RepairKeySample_Fetch">
-              <QueryStatement Target="scoredFactsDs">SELECT * FROM ScoredFacts</QueryStatement>
-            </PerformanceCounter>
             <RepairKey IdField="ID" KeyField="Country" ProbabilityField="Score" 
-                       TargetTable="RepKeyResults" Source="scoredFactsDs"/>
+                       TargetTable="RepKeyResults" Source="ScoredFacts"/>
             <PerformanceCounter Name="RepairKeySample_Update">
               <NonQueryStatement>
                 UPDATE UserScores us SET us.Belief=(us.Belief +
-                (SELECT COUNT(*) FROM RepKeyResults rk, ScoredFactsUsers sfu WHERE rk.FactId=sfu.FactId AND sfu.UserID=us.UserId)/
+                (SELECT COUNT(*) FROM RepKeyResults rk, ScoredFactsUsers sfu WHERE rk.ID=sfu.FactId AND sfu.UserID=us.UserId)/
                 us.Version/us.NumOfFacts), us.Version=us.Version+1
               </NonQueryStatement>
             </PerformanceCounter>

@@ -105,7 +105,7 @@ namespace DCF.QuestionAnswering
 
             foreach (DataRow row in ds.Tables[0].Rows)
             {
-                double cur = Convert.ToDouble(row[1]);
+                double cur = Convert.ToDouble(row["Confidence"]);
                 if (cur < m_minScore) m_minScore = cur;
                 if (cur > m_maxScore) m_maxScore = cur;
             }
@@ -118,7 +118,8 @@ namespace DCF.QuestionAnswering
         private void _dataGridViewQueryResults_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             // if this is the score
-            if (m_table.Columns[e.ColumnIndex].ColumnName.Contains("onfidence") )
+            if (m_table!=null && m_table.Columns.Count > e.ColumnIndex && 
+                m_table.Columns[e.ColumnIndex].ColumnName.Contains("onfidence") )
             {
                 double d = Convert.ToDouble(e.Value);
                 double normalized = d;

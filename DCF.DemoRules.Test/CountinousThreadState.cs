@@ -54,10 +54,10 @@ namespace DCF.DemoRules.Test
                         {
                             Logger.TraceWriteLine("Incremental cleaning");
                             timestamp = cur;
-                            //CleansingManager online =
-                            //    new CleansingManager(new OnlineCleaningRuleProvider(dcm.SqlUtils));
-                            //online.cleanData(null);
-                            offline.cleanData(null);
+                            CleansingManager online =
+                                new CleansingManager(new OnlineCleaningRuleProvider(dcm.SqlUtils));
+                            online.cleanData(null);
+                            //offline.cleanData(null);
                         }
                     }
                 }

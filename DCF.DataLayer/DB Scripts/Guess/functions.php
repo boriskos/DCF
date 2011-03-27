@@ -225,7 +225,7 @@ switch ($functionToRun){
 		$row = mysql_fetch_array($result);
 		
 		$rnd_num = rand(1,100);
-		if ($rnd_num <= 50) { // query the single answer question
+		if ($rnd_num <= 80) { // query the single answer question
 			if ($row['value'] == $previousCategoryID){
 				//$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId <> '$previousCategoryID' ORDER BY RAND() LIMIT 1") or die(mysql_error());
 				$result2 = mysql_query("select tpc.* from topics tpc, (select sf.topicid, max(sf.score) Score from scoredfacts sf where sf.topicid in (select tt.topicid topicid from topics tt where tt.topictype=0 and tt.TopicId <> '$previousCategoryID' and tt.Category='Demo' and tt.topicid not in (select distinct t.topicid from topics t, itemsmentions im where im.userid='$myuser' and t.topicid=im.topicid)) group by sf.topicid order by Score LIMIT 1) a where a.topicid=tpc.topicid") or die(mysql_error());
@@ -234,13 +234,13 @@ switch ($functionToRun){
 				$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId = '$newEntry'") or die(mysql_error());
 			}
 		} else { // query multiple answers
-			$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId <> '$previousCategoryID' and TopicType=1 ORDER BY RAND() LIMIT 1") or die(mysql_error());
+			$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId <> '$previousCategoryID' and TopicType=1 and Category='Demo' ORDER BY RAND() LIMIT 1") or die(mysql_error());
 		}
 	
 		$row2 = mysql_fetch_array($result2);
 		if ($row2 == false)
 		{
-			$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId <> '$previousCategoryID' and TopicType=1 ORDER BY RAND() LIMIT 1") or die(mysql_error());
+			$result2 = mysql_query("SELECT * FROM `topics` WHERE TopicId <> '$previousCategoryID' and TopicType=1 and Category='Demo' ORDER BY RAND() LIMIT 1") or die(mysql_error());
 			$row2 = mysql_fetch_array($result2);
 		}
 		$returnVars['category'] = $row2['TopicName'];
