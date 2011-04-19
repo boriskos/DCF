@@ -99,6 +99,7 @@ namespace DCF.DemoRules
                         }
 
                         // update users with the proportion of facts that survived this repair key operation
+                        //RepairKeySample.NewNormalizedScoreCalculation(SqlUtils);
                         RepairKeySample.NewScoreCalculation(SqlUtils);
                     }
                 }

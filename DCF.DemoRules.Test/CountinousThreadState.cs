@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define FREQUENT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,7 @@ using DCF.Common;
 
 namespace DCF.DemoRules.Test
 {
+
     class CountinousThreadState
     {
         public CountinousThreadState(string[] args_p)
@@ -34,24 +37,34 @@ namespace DCF.DemoRules.Test
                     Logger.DebugWriteLine(string.Format("back at {0}", DateTime.Now.ToLongTimeString()));
                     if (m_exit_thread) break;
 
-                    // always clean: offline.cleanData(null);
+                    DateTime cur = DateTime.Now;
+#if (!FREQUENT)
+                    object res = dcm.SqlUtils.ExecuteScalar(string.Format(
+                        "select count(*) from itemsmentions where time > timestamp('{0}')",
+                        timestamp.ToString("s")));
+                    long num = (long)res;
+                    if (num > 0)
+#endif
+                    {
+                        if (0 == iteration++ % 10) // 2 minutes
+                        { // full cleanup
+                            timestamp = DateTime.Now;
+                            Logger.DebugWriteLine("Full cleaning");
+                            offline.cleanData(null);
+                        }
+                        else
+                        { // incremental cleanup
 
-                    if (0 == iteration++ % 10) // 2 minutes
-                    { // full cleanup
+#if (FREQUENT)
+                            // test code
+                            object res = dcm.SqlUtils.ExecuteScalar(string.Format(
+                                "select count(*) from itemsmentions where time > timestamp('{0}')",
+                                timestamp.ToString("s")));
+                            long num = (long)res;
+                            if (num == 0) continue;
+#endif
 
-                        timestamp = DateTime.Now;
-                        Logger.DebugWriteLine("Full cleaning");
-                        offline.cleanData(null);
-                    }
-                    else
-                    { // incremental cleanup
-                        DateTime cur = DateTime.Now;
-                        object res = dcm.SqlUtils.ExecuteScalar(string.Format(
-                            "select count(*) from itemsmentions where time > timestamp('{0}')",
-                            timestamp.ToString("s")));
-                        long num = (long)res;
-                        if (num > 0)
-                        {
+
                             Logger.TraceWriteLine("Incremental cleaning");
                             timestamp = cur;
                             CleansingManager online =

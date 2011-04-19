@@ -190,6 +190,7 @@ namespace DCF.DemoRules
 
                         // update users with the proportion of facts that survived this repair key operation
 
+                        //NewNormalizedScoreCalculation(SqlUtils);
                         NewScoreCalculation(SqlUtils);
                         //OriginalScoreCalculation();
 
@@ -239,6 +240,25 @@ namespace DCF.DemoRules
                 TableConstants.RepKeyResults,
                 TableConstants.ItemsMentions,
                 0.2));
+        }
+        public static void NewNormalizedScoreCalculation(MySqlUtils sqlUtils)
+        {
+            object obj = sqlUtils.ExecuteScalar(string.Format(
+                "select max(NumOfFacts) from {0}", TableConstants.UserScores));
+            int maxFactor = (int)obj;
+            int minFactor = (int)sqlUtils.ExecuteScalar(string.Format(
+                "select min(NumOfFacts) from {0}", TableConstants.UserScores));
+            // this works but not converges
+            sqlUtils.ExecuteNonQuery(string.Format(
+                "UPDATE {0} us " +
+                "SET us.Belief=((1-{3})*us.Belief + " +
+                "{3}*(SELECT COUNT(*) FROM {1} rk, {2} im " +
+                "WHERE rk.FactId=im.ItemId AND im.UserID=us.UserId)/" +
+                "us.NumOfFacts*(us.NumOfFacts-{4})/({5}-{4})), us.Version=us.Version+1",
+                TableConstants.UserScores,
+                TableConstants.RepKeyResults,
+                TableConstants.ItemsMentions,
+                0.2, minFactor, maxFactor));
         }
 
         private void AddOnlyScoreCalculation()
