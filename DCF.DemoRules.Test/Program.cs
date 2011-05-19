@@ -8,6 +8,7 @@ using DCF.Common;
 using System.Diagnostics;
 using DCF.DataLayerAwareLib;
 using System.Threading;
+using DCF.XmlRules;
 
 namespace DCF.DemoRules.Test
 {
@@ -51,6 +52,12 @@ namespace DCF.DemoRules.Test
                             Usage();
                         }
                         break;
+                    case "read-XML":
+                        if (!ReadXml(args))
+                        {
+                            Usage();
+                        }
+                        break;
                     default:
                         Usage();
                         break;
@@ -61,6 +68,17 @@ namespace DCF.DemoRules.Test
                 Logger.DebugWriteLine(PerformanceCounterStatic.ReportAllTimers());
                 Logger.DebugFlush();
             }
+        }
+
+        private static bool ReadXml(string[] args)
+        {
+            Console.WriteLine("Creating test");
+            TestXmlReading test = new TestXmlReading(args[1]);
+            test.init();
+            Console.WriteLine("Running test");
+            test.DoTestFlow();
+            Console.WriteLine("done");
+            return true;
         }
 
         private static bool ContinousCleaning(string[] args)

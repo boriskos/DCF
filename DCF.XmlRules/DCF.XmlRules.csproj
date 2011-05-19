@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{90B64C96-9ABB-46E5-9B94-E7BE79435171}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{57C51F79-D7F7-41B5-BED7-43DCDD56F3B7}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DCF.DemoRules.Test</RootNamespace>
-    <AssemblyName>DCF.DemoRules.Test</AssemblyName>
+    <RootNamespace>DCF.XmlRules</RootNamespace>
+    <AssemblyName>DCF.XmlRules</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,13 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySql.Data, Version=6.2.4.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
-    <Reference Include="PowerCollections, Version=1.0.2141.24679, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Bin\Lib\PowerCollections.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -51,17 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CountinousThreadState.cs" />
-    <Compile Include="DatabaseCleaningManager.cs" />
-    <Compile Include="InitSection.cs" />
-    <Compile Include="ItemTemplate.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="XmlMySqlRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestDataAdvancedGenerator.cs" />
-    <Compile Include="TestDataGenerationManager.cs" />
-    <Compile Include="TestDataGenerator.cs" />
-    <Compile Include="TestXmlReading.cs" />
-    <Compile Include="TopicTemplate.cs" />
+    <Compile Include="XmlSqlRepairKeyStatement.cs" />
+    <Compile Include="XmlRuleSupplier.cs" />
+    <Compile Include="XmlSqlEventStatement.cs" />
+    <Compile Include="XmlSqlStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DCF.Common\DCF.Common.csproj">
@@ -76,54 +65,17 @@
       <Project>{6F03B9FC-870E-4A30-9AC7-5D4CC5997860}</Project>
       <Name>DCF.DataLayer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DCF.DemoRules\DCF.DemoRules.csproj">
-      <Project>{A3AFF289-DDCC-447B-949E-2A7B78F9EC34}</Project>
-      <Name>DCF.DemoRules</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DCF.Lib\DCF.Lib.csproj">
       <Project>{909A8C0C-BE2A-4BF8-A105-6E8706E7ADFF}</Project>
       <Name>DCF.Lib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DCF.PaperRules\DCF.PaperRules.csproj">
-      <Project>{4B750388-BDC6-4C96-A0FD-7302AF2B1874}</Project>
-      <Name>DCF.PaperRules</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DCF.XmlRules\DCF.XmlRules.csproj">
-      <Project>{57C51F79-D7F7-41B5-BED7-43DCDD56F3B7}</Project>
-      <Name>DCF.XmlRules</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="ExternalData\CheckSupport.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ExternalData\create_run_bat.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ExternalData\DCF.DemoRules.Test.Schema.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ExternalData\db_probabilities.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ExternalData\db_sizes.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ExternalData\Items.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ExternalData\ItemsPaper.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ExternalData\Topics.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ExternalData\TopicsPaper.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="CosineProbRule.xml" />
+    <Content Include="CosineRule.xml" />
+    <Content Include="DemoRules.xml" />
+    <Content Include="FixedPageRankRule.xml" />
+    <Content Include="PageRankRule.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

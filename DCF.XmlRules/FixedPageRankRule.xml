@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="FixedPointPageRankRule">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS Constants ( N int(11) unsigned NOT NULL ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          TRUNCATE TABLE Constants
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO Constants ( N )
+          ( SELECT COUNT(*) FROM Users) 
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+          UserID int(11) unsigned NOT NULL PRIMARY KEY,
+          Belief double NOT NULL,
+          Version int(11) NULL,
+          NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0 as Belief, 1 as Version, 0 as NumOfFacts 
+    		  FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s
+          SET us.NumOfFacts = s.NumOfItems
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us, Constants c SET us.Belief = 1/c.N
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserGraph (
+          ID INT(11) unsigned NOT NULL AUTO_INCREMENT,
+          SourceUserID INT(11) unsigned NOT NULL,
+          TargetUserID INT(11) unsigned NOT NULL,
+          Weight DOUBLE NOT NULL DEFAULT 0,
+
+          PRIMARY KEY(ID),
+          FOREIGN KEY SourceUserID_fkey (SourceUserID) REFERENCES Users (id) ON DELETE CASCADE,
+          FOREIGN KEY TargetUserID_fkey (TargetUserID) REFERENCES Users (id) ON DELETE CASCADE
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          TRUNCATE TABLE UserGraph
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserGraph (SourceUserID, TargetUserID, Weight)
+          SELECT im1.UserId, im2.UserId, COUNT(*) AS Weight
+          FROM ItemsMentions_v im1, ItemsMentions_v im2 
+          WHERE im1.UserId &lt;&gt; im2.UserId AND im1.ItemId=im2.ItemId
+          GROUP BY im1.UserId, im2.UserId
+        </NonQueryStatement>
+        <NonQueryStatement>
+		      UPDATE UserGraph ug1, 
+		      (SELECT ug2.SourceUserId, SUM(ug2.Weight) as TotalWeight FROM UserGraph ug2 GROUP BY ug2.SourceUserId) t
+		      SET ug1.Weight = ug1.Weight / t.TotalWeight
+		      WHERE ug1.SourceUserId=t.SourceUserId
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE OR REPLACE VIEW ScoredGraph AS
+          SELECT ug.*, SUM(us.Belief*ug.Weight) as TargetScore
+          FROM UserGraph ug, UserScores us
+          WHERE ug.SourceUserId=us.UserId
+          GROUP BY ug.TargetUserId
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE UserScores us, ScoredGraph ug, Constants c
+          SET us.Belief = 0.15/c.N + 0.85*ug.TargetScore
+          WHERE us.UserId=ug.TargetUserId
+        </NonQueryStatement>
+      </Body>
+    </Rule>
+	<Rule Id="PageRankConvergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS UserScoresHistory (
+          Version INT(11) NOT NULL, 
+          UserId INT(11) NOT NULL, 
+          UserScore DOUBLE NOT NULL, 
+          INDEX UserScoresHistory_userIdx (UserId ASC) 
+        ) ENGINE MyISAM
+      </NonQueryStatement>
+      <NonQueryStatement>
+        TRUNCATE TABLE UserScoresHistory
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO UserScoresHistory (Version, UserScore, UserId)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version, 
+        Belief as UserScore, UserId FROM UserScores)
+      </NonQueryStatement>
+    </Body>
+	</Rule>
+  </Sampling>
+</Rules>

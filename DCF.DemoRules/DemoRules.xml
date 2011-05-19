@@ -17,7 +17,9 @@
           (SELECT u.ID as UserId, 0.2 as Belief, 1 as Version, 
           (SELECT COUNT(*) FROM UserCapitals uc WHERE uc.UserID=u.ID) as NumOfFacts FROM Users u)        
         </NonQueryStatement>
-        <DropTableIfExists TableName="ScoredFacts"/>
+        <NonQueryStatement>
+          DROP TABLE IF EXISTS ScoredFacts
+        </NonQueryStatement>
         <NonQueryStatement>
           CREATE TABLE IF NOT EXISTS ScoredFacts ( 
             ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -34,7 +36,9 @@
           SELECT a.City, a.Country, count(a.ID) AS Factor, 0 AS Score 
           FROM UserCapitals a GROUP BY country, city
         </NonQueryStatement>
-        <DropTableIfExists TableName="ScoredFactsUsers"/>
+        <NonQueryStatement>
+          DROP TABLE IF EXISTS ScoredFactsUsers
+        </NonQueryStatement>
         <NonQueryStatement>
           CREATE TABLE IF NOT EXISTS ScoredFactsUsers (
             FactId INT(11) NOT NULL,
@@ -65,8 +69,10 @@
                 SET sf.Score = sf.Score / cs.CountryScore WHERE sf.Country = cs.Country
               </NonQueryStatement>
             </PerformanceCounter>
-            <RepairKey IdField="ID" KeyField="Country" ProbabilityField="Score" 
-                       TargetTable="RepKeyResults" Source="ScoredFacts"/>
+            <RepairKey IdField="ID" KeyField="Country" ProbabilityField="Score"
+                       TargetTable="RepKeyResults">
+              SELECT * FROM ScoredFacts
+            </RepairKey> 
             <PerformanceCounter Name="RepairKeySample_Update">
               <NonQueryStatement>
                 UPDATE UserScores us SET us.Belief=(us.Belief +
@@ -78,5 +84,30 @@
         </PerformanceCounter>
       </Body>
     </Rule>
+	<Rule Id="Convergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS UserScoresHistory (Version INT(11) NOT NULL,
+        UserId INT(11) NOT NULL, UserScore DOUBLE NOT NULL, INDEX UserScoresHistory_userIdx (UserId ASC)) 
+        ENGINE MEMORY
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO UserScoresHistory (Version, UserScore, UserId)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version, 
+        Belief as UserScore, UserId FROM UserScores)
+      </NonQueryStatement>
+      <NonQueryStatement>
+        DELETE FROM UserScoresHistory WHERE Version &lt ($__CleaningInternals__.CurrentIteration - 7)
+      </NonQueryStatement>
+      <EventStatement Raise="$__CleaningInternals__.StopSampling">
+        SELECT COUNT(a.*)/b.UsersCount &lt= 0.01 FROM (
+        SELECT UserId, MAX(UserScore) as MaxScore, MIN(UserScore) as MinScore
+        FROM UserScoresHistory GROUP BY UserId) a, (select count(*) as UsersCount from users) b
+        WHERE a.MaxScore-a.MinScore > 0.05
+      </EventStatement>
+    </Body>
+	</Rule>
   </Sampling>
 </Rules>

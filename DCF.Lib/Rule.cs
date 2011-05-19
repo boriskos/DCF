@@ -10,6 +10,7 @@ namespace DCF.Lib
         #region Public Types
         public enum RuleTypeEnum { System, Cleaning };
         public enum PresedenceEnum { First, Last, None };
+        public delegate void RuleStoppingDelegate();
         public delegate void RuleFinishedDelegate(bool success, object data);
         public delegate void RuleExecuterDelegate(Dictionary<string, object> dataHashTable);
         

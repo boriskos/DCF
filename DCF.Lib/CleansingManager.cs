@@ -46,16 +46,10 @@ namespace DCF.Lib
                 {
                     Logger.DebugWriteLine(string.Format("Cleaning iteration {0}", i), Logger.CleaningDataStr);
                     IEnumerable<Rule> rules = SelectRules(involvedTableNames);
-                    if (rules == null)
+                    if (rules == null || rules.Count()==0)
                     {
-                        Logger.DebugWriteLine("Selected no rules!", Logger.CleaningDataStr);
                         break;
                     }
-
-                    Logger.DebugWriteLine("Selected rules:", Logger.CleaningDataStr);
-                    Logger.DebugIndent();
-                    foreach (var rule in rules) Logger.DebugWriteLine(rule.Id); ;
-                    Logger.DebugUnindent();
 
                     ApplyRules(rules);
                     Logger.DebugWriteLine("");
@@ -70,14 +64,22 @@ namespace DCF.Lib
             {
                 m_cleaningRulesList = m_ruleSupplier.GetCleaningRules();
 
-                if (m_cleaningRulesList != null)
+                if (m_cleaningRulesList != null || m_cleaningRulesList.Count != 0)
                 {
+                    Logger.DebugWriteLine("Selected cleaning rules:", Logger.CleaningDataStr);
+                    Logger.DebugIndent();
                     foreach (Rule rule in m_cleaningRulesList)
                     {
                         rule.StopCleaningProcess += new EventHandler(SetStopSamping);
                         rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
                         rule.init(null);
+                        Logger.DebugWriteLine(rule.Id); ;
                     }
+                    Logger.DebugUnindent();
+                }
+                else
+                {
+                    Logger.DebugWriteLine("Selected no cleaning rules!", Logger.CleaningDataStr);
                 }
             }
             return m_cleaningRulesList;
@@ -117,14 +119,25 @@ namespace DCF.Lib
             if (m_samplingRulesList == null)
             {
                 m_samplingRulesList = m_ruleSupplier.GetSampleRules();
-                if (m_samplingRulesList != null)
+                if (m_samplingRulesList != null || m_samplingRulesList.Count!=0)
                 {
+                    Logger.DebugWriteLine("Selected sampling rules:", Logger.CleaningDataStr);
+                    Logger.DebugIndent();
                     foreach (Rule rule in m_samplingRulesList)
                     {
                         rule.StopCleaningProcess += new EventHandler(SetStopSamping);
                         rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
-                        rule.init(null);
+
+                        Dictionary<string, object> data = new Dictionary<string, object>();
+                        data["CurrentIteration"] = new Func<int>(() => CurrentIteration);
+                        rule.init(data);
+                        Logger.DebugWriteLine(rule.Id);
                     }
+                    Logger.DebugUnindent();
+                }
+                else
+                {
+                    Logger.DebugWriteLine("Selected no sampling rules!", Logger.CleaningDataStr);
                 }
             }
 

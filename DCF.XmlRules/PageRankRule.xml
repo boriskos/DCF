@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="PageRankRule">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+          UserID int(11) unsigned NOT NULL PRIMARY KEY,
+          Belief double NOT NULL,
+          Version int(11) NULL,
+          NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0 as Belief, 1 as Version, 0 as NumOfFacts FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s
+          SET us.NumOfFacts = s.NumOfItems
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserGraph (
+          ID INT(11) unsigned NOT NULL AUTO_INCREMENT,
+          SourceUserID INT(11) unsigned NOT NULL,
+          TargetUserID INT(11) unsigned NOT NULL,
+          Weight DOUBLE NOT NULL DEFAULT 0,
+
+          PRIMARY KEY(ID),
+          FOREIGN KEY SourceUserID_fkey (SourceUserID) REFERENCES Users (id) ON DELETE CASCADE,
+          FOREIGN KEY TargetUserID_fkey (TargetUserID) REFERENCES Users (id) ON DELETE CASCADE
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          TRUNCATE TABLE UserGraph
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserGraph (SourceUserID, TargetUserID, Weight)
+          SELECT im1.UserId, im2.UserId, COUNT(*) AS Weight
+          FROM ItemsMentions_v im1, ItemsMentions_v im2 
+          WHERE im1.UserId &lt;&gt; im2.UserId AND im1.ItemId=im2.ItemId
+          GROUP BY im1.UserId, im2.UserId
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS CurrentState (
+          ID INT(11) unsigned NOT NULL AUTO_INCREMENT,
+          CurUserID INT(11) unsigned NOT NULL,
+
+          PRIMARY KEY(ID),
+          FOREIGN KEY CurUserID_fkey (CurUserID) REFERENCES Users (id) ON DELETE CASCADE
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          TRUNCATE TABLE CurrentState
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO CurrentState (CurUserId) (SELECT UserID FROM users_v ORDER BY UserID)
+        </NonQueryStatement>
+        <NonQueryStatement>
+          DROP TABLE IF EXISTS RepKeyResults
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS RepKeyResults (ID int(11) unsigned NOT NULL, TargetUserID int(11) unsigned NOT NULL) ENGINE = MEMORY
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE UserScores us SET us.Belief = us.Belief + (select count(*) from CurrentState cs where cs.CurUserId=us.UserId)
+        </NonQueryStatement>
+        <RepairKey IdField="ID, TargetUserID" KeyField="ID" ProbabilityField="NormalizedWeight"
+           TargetTable="RepKeyResults">
+          SELECT cs.ID, ug.SourceUserID, ug.TargetUserId, ug.Weight/nr.TotalWeight AS NormalizedWeight
+          FROM UserGraph ug, CurrentState cs,
+          (SELECT ug1.SourceUserID AS UserId, SUM(ug1.Weight) AS TotalWeight FROM UserGraph ug1 GROUP BY ug1.SourceUserId) nr
+          WHERE cs.CurUserID=ug.SourceUserID AND cs.CurUserId=nr.UserId
+        </RepairKey>
+        <NonQueryStatement>
+          UPDATE CurrentState cs, RepKeyResults rk
+          SET cs.CurUserId = rk.TargetUserId
+          WHERE cs.ID = rk.ID
+        </NonQueryStatement>
+      </Body>
+    </Rule>
+	<Rule Id="PageRankConvergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS UserScoresHistory (
+          Version INT(11) NOT NULL, 
+          UserId INT(11) NOT NULL, 
+          UserScore DOUBLE NOT NULL, 
+          INDEX UserScoresHistory_userIdx (UserId ASC) 
+        ) ENGINE MyISAM
+      </NonQueryStatement>
+      <NonQueryStatement>
+        TRUNCATE TABLE UserScoresHistory
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO UserScoresHistory (Version, UserScore, UserId)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version, 
+        Belief as UserScore, UserId FROM UserScores)
+      </NonQueryStatement>
+    </Body>
+	</Rule>
+  </Sampling>
+</Rules>

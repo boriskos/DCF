@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="RepairKeySample">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+            UserID int(11) NOT NULL PRIMARY KEY,
+            Belief double NOT NULL,
+            Version int(11) NULL,
+            NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0.2 as Belief, 1 as Version, 0 as NumOfFacts FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,  
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s 
+          SET us.NumOfFacts = s.NumOfItems, Version=1
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS ScoredFacts (
+            ItemID INT(11) unsigned NOT NULL, 
+            TopicID INT(11) unsigned NOT NULL, 
+            Factor int(11) NOT NULL, 
+            Score DOUBLE NOT NULL, 
+            Category varchar(70) COLLATE utf8_bin NOT NULL, 
+            Correctness TINYINT(1) NULL, 
+
+            PRIMARY KEY(ItemID),
+            FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE, 
+            FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE 
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO ScoredFacts (ItemId, TopicId, Category, Factor, Score)
+          SELECT i.ItemId, i.TopicId, 'Demo' AS Category, 0 AS Factor, 0 AS Score
+          FROM Topics t, Items_v i WHERE t.TopicId=i.TopicId AND t.Category = 'Demo' AND t.TopicType=0 
+          AND i.ItemId NOT IN (SELECT ItemID FROM ScoredFacts)
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM ItemsMentions_v im, Topics t
+          WHERE t.TopicId=im.TopicId AND t.TopicType=0 GROUP BY im.ItemId) s 
+          SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS RepKeyResults (ItemID int(11) NOT NULL) ENGINE = MEMORY
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, Topics t1 SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM UserScores us, ItemsMentions_v im 
+          WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='Demo'), 0) 
+          WHERE sf.TopicID=t1.TopicId AND t1.TopicType=0
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, (SELECT SUM(sf1.Score) AS TopicScore, sf1.TopicId 
+          FROM ScoredFacts sf1, Topics t WHERE sf1.Category = 'Demo' AND sf1.TopicId=t.TopicId AND t.TopicType=0
+          GROUP BY sf1.TopicId) cs 
+          SET sf.Score = sf.Score / cs.TopicScore 
+          WHERE sf.TopicId = cs.TopicId AND sf.Category='Demo' AND cs.TopicScore &lt;&gt; 0
+        </NonQueryStatement>
+        <RepairKey IdField="ItemID" KeyField="TopicId" ProbabilityField="Score"
+                   TargetTable="RepKeyResults">
+          SELECT sf.* FROM ScoredFacts sf, Topics t 
+          WHERE sf.Category='Demo' AND sf.TopicId=t.TopicId AND t.TopicType=0
+        </RepairKey> 
+        <NonQueryStatement>
+          UPDATE UserScores us 
+          SET us.Belief=((1-0.2)*us.Belief + 
+          0.2*(SELECT COUNT(*) FROM RepKeyResults rk, ItemsMentions_v im
+          WHERE rk.ItemId=im.ItemId AND im.UserID=us.UserId)/
+          us.NumOfFacts/us.version), us.Version=us.Version+1
+        </NonQueryStatement>
+      </Body>
+    </Rule>
+    <Rule Id="Cosine">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+          UserID int(11) NOT NULL PRIMARY KEY,
+          Belief double NOT NULL,
+          Version int(11) NULL,
+          NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0.2 as Belief, 1 as Version, 0 as NumOfFacts FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s
+          SET us.NumOfFacts = s.NumOfItems, Version=1
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS ScoredFacts (
+          ItemID INT(11) unsigned NOT NULL,
+          TopicID INT(11) unsigned NOT NULL,
+          Factor int(11) NOT NULL,
+          Score DOUBLE NOT NULL,
+          Category varchar(70) COLLATE utf8_bin NOT NULL,
+          Correctness TINYINT(1) NULL,
+
+          PRIMARY KEY(ItemID),
+          FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE,
+          FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO ScoredFacts (ItemId, TopicId, Category, Factor, Score)
+          SELECT i.ItemId, i.TopicId, 'Demo' AS Category, 0 AS Factor, 0 AS Score
+          FROM Topics t, Items_v i WHERE t.TopicId=i.TopicId AND t.Category = 'Demo' AND t.TopicType=0
+          AND i.ItemId NOT IN (SELECT ItemID FROM ScoredFacts)
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM ItemsMentions_v im, Topics t
+          WHERE t.TopicId=im.TopicId AND t.TopicType=0 GROUP BY im.ItemId) s
+          SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS RepKeyResults (ItemID int(11) NOT NULL) ENGINE = MEMORY
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, Topics t1 SET sf.Score = IFNULL((SELECT SUM(us.Belief) FROM UserScores us, ItemsMentions_v im
+          WHERE sf.ItemID=im.ItemID AND im.UserId=us.UserId AND sf.Category='Demo'), 0)
+          WHERE sf.TopicID=t1.TopicId AND t1.TopicType=0
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE ScoredFacts sf, (SELECT SUM(sf1.Score) AS TopicScore, sf1.TopicId
+          FROM ScoredFacts sf1, Topics t WHERE sf1.Category = 'Demo' AND sf1.TopicId=t.TopicId AND t.TopicType=0
+          GROUP BY sf1.TopicId) cs
+          SET sf.Score = sf.Score / cs.TopicScore
+          WHERE sf.TopicId = cs.TopicId AND sf.Category='Demo' AND cs.TopicScore &lt;&gt; 0
+        </NonQueryStatement>
+        <RepairKey IdField="ItemID" KeyField="TopicId" ProbabilityField="Score"
+                   TargetTable="RepKeyResults">
+          SELECT sf.* FROM ScoredFacts sf, Topics t
+          WHERE sf.Category='Demo' AND sf.TopicId=t.TopicId AND t.TopicType=0
+        </RepairKey>
+        <NonQueryStatement>
+          UPDATE UserScores us
+          SET us.Belief=((1-0.2)*us.Belief +
+          0.2*(SELECT COUNT(*) FROM RepKeyResults rk, ItemsMentions_v im
+          WHERE rk.ItemId=im.ItemId AND im.UserID=us.UserId)/
+          us.NumOfFacts/us.version), us.Version=us.Version+1
+        </NonQueryStatement>
+      </Body>
+    </Rule>
+    <Rule Id="Convergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS UserScoresHistory (
+          Version INT(11) NOT NULL, 
+          UserId INT(11) NOT NULL, 
+          UserScore DOUBLE NOT NULL, 
+          INDEX UserScoresHistory_userIdx (UserId ASC) 
+        ) ENGINE MEMORY
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO UserScoresHistory (Version, UserScore, UserId)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version, 
+        Belief as UserScore, UserId FROM UserScores)
+      </NonQueryStatement>
+      <NonQueryStatement>
+        DELETE FROM UserScoresHistory WHERE Version &lt; ($__CleaningInternals__.CurrentIteration - 7)
+      </NonQueryStatement>
+      <EventStatement Raise="$__CleaningInternals__.StopSampling">
+        SELECT COUNT(*)/b.UsersCount &lt;= 0.01 FROM 
+        (SELECT UserId, MAX(UserScore) as MaxScore, MIN(UserScore) as MinScore FROM UserScoresHistory GROUP BY UserId) a, 
+        (SELECT COUNT(*) as UsersCount FROM users_v) b
+        WHERE a.MaxScore-a.MinScore > 0.05
+      </EventStatement>
+    </Body>
+	</Rule>
+  </Sampling>
+</Rules>
