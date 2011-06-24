@@ -71,11 +71,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CosineProbRule.xml" />
-    <Content Include="CosineRule.xml" />
-    <Content Include="DemoRules.xml" />
-    <Content Include="FixedPageRankRule.xml" />
-    <Content Include="PageRankRule.xml" />
+    <Content Include="Rules\CosineProbRule.xml" />
+    <Content Include="Rules\CosineRule.xml" />
+    <Content Include="Rules\DemoRules.xml" />
+    <Content Include="Rules\FixedPageRankRule.xml" />
+    <Content Include="Rules\PageRankRule.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

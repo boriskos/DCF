@@ -5,14 +5,10 @@
     <Rule Id="FixedPointPageRankRule">
       <Initialization>
         <NonQueryStatement>
-          CREATE TABLE IF NOT EXISTS Constants ( N int(11) unsigned NOT NULL ) ENGINE = MEMORY
+          DROP TABLE IF EXISTS Constants
         </NonQueryStatement>
         <NonQueryStatement>
-          TRUNCATE TABLE Constants
-        </NonQueryStatement>
-        <NonQueryStatement>
-          INSERT INTO Constants ( N )
-          ( SELECT COUNT(*) FROM Users) 
+          CREATE TABLE IF NOT EXISTS Constants AS ( SELECT COUNT(*) as N FROM Users )
         </NonQueryStatement>
         <NonQueryStatement>
           CREATE TABLE IF NOT EXISTS UserScores (
@@ -30,7 +26,7 @@
         </NonQueryStatement>
         <NonQueryStatement>
           UPDATE UserScores us,
-          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions im GROUP BY im.UserID) s
           SET us.NumOfFacts = s.NumOfItems
           WHERE s.UserID=us.UserID
         </NonQueryStatement>
@@ -44,9 +40,7 @@
           TargetUserID INT(11) unsigned NOT NULL,
           Weight DOUBLE NOT NULL DEFAULT 0,
 
-          PRIMARY KEY(ID),
-          FOREIGN KEY SourceUserID_fkey (SourceUserID) REFERENCES Users (id) ON DELETE CASCADE,
-          FOREIGN KEY TargetUserID_fkey (TargetUserID) REFERENCES Users (id) ON DELETE CASCADE
+          PRIMARY KEY(ID)
           ) ENGINE = MEMORY
         </NonQueryStatement>
         <NonQueryStatement>
@@ -55,7 +49,7 @@
         <NonQueryStatement>
           INSERT INTO UserGraph (SourceUserID, TargetUserID, Weight)
           SELECT im1.UserId, im2.UserId, COUNT(*) AS Weight
-          FROM ItemsMentions_v im1, ItemsMentions_v im2 
+          FROM ItemsMentions im1, ItemsMentions im2 
           WHERE im1.UserId &lt;&gt; im2.UserId AND im1.ItemId=im2.ItemId
           GROUP BY im1.UserId, im2.UserId
         </NonQueryStatement>
@@ -64,6 +58,11 @@
 		      (SELECT ug2.SourceUserId, SUM(ug2.Weight) as TotalWeight FROM UserGraph ug2 GROUP BY ug2.SourceUserId) t
 		      SET ug1.Weight = ug1.Weight / t.TotalWeight
 		      WHERE ug1.SourceUserId=t.SourceUserId
+        </NonQueryStatement>
+        <NonQueryStatement>
+          ALTER TABLE UserGraph
+          ADD INDEX `source_user_idx` (`SourceUserID` ASC), 
+          ADD INDEX `target_user_idx` (`TargetUserID` ASC)
         </NonQueryStatement>
         <NonQueryStatement>
           CREATE OR REPLACE VIEW ScoredGraph AS
@@ -84,24 +83,28 @@
 	<Rule Id="PageRankConvergence">
     <Initialization>
       <NonQueryStatement>
-        CREATE TABLE IF NOT EXISTS UserScoresHistory (
-          Version INT(11) NOT NULL, 
-          UserId INT(11) NOT NULL, 
-          UserScore DOUBLE NOT NULL, 
-          INDEX UserScoresHistory_userIdx (UserId ASC) 
+        CREATE TABLE IF NOT EXISTS ConvergenceHistory (
+        Version INT(11) NOT NULL PRIMARY KEY,
+        Entropy DOUBLE NOT NULL
         ) ENGINE MyISAM
       </NonQueryStatement>
       <NonQueryStatement>
-        TRUNCATE TABLE UserScoresHistory
+        TRUNCATE TABLE ConvergenceHistory
       </NonQueryStatement>
     </Initialization>
     <Body>
       <NonQueryStatement>
-        INSERT INTO UserScoresHistory (Version, UserScore, UserId)
-        (SELECT $__CleaningInternals__.CurrentIteration as Version, 
-        Belief as UserScore, UserId FROM UserScores)
+        INSERT INTO ConvergenceHistory (Version, Entropy)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version,
+        -SUM(us.Belief*LOG(us.Belief)) as Entropy FROM UserScores us)
       </NonQueryStatement>
+      <EventStatement Raise="$__CleaningInternals__.StopSampling">
+        SELECT if(a.EntCount&lt;5, 0, (a.MaxEntropy-a.MinEntropy)/a.MaxEntropy &lt; 0.01)
+        FROM
+        (SELECT MAX(Entropy) MaxEntropy, MIN(Entropy) MinEntropy, COUNT(*) EntCount FROM ConvergenceHistory
+        WHERE version >= $__CleaningInternals__.CurrentIteration-5) a
+      </EventStatement>
     </Body>
-	</Rule>
+  </Rule>
   </Sampling>
 </Rules>

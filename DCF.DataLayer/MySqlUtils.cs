@@ -98,19 +98,29 @@ namespace DCF.DataLayer
             {
                 table.TableName = tablename;
                 using (DbDataAdapter da = CreateDataAdapter(string.Format(
-                    "select * from {0}", table.TableName)))
+                    "select * from {0} LIMIT 1", table.TableName)))
                 {
-                    da.FillSchema(table, SchemaType.Mapped);
+                    da.FillSchema(table, SchemaType.Source);
                 }
             }
         }
 
         public void PopulateTableFromDB(DataTable dataTable)
         {
+            PopulateTableFromDB(dataTable, "");
+        }
+
+        public void PopulateTableFromDB(DataTable dataTable, string queryRestriction)
+        {
             using (new PerformanceCounter(SqlUtilsTimerName))
             {
-                using (DbCommand dc = CreateCommand(string.Format(
-                    "select * from {0}", dataTable.TableName)))
+                string query = string.Format("select * from {0}", dataTable.TableName);
+                if (queryRestriction != null && queryRestriction.Length > 0)
+                {
+                    query = string.Format("{0} where {1}", query, queryRestriction);
+                }
+
+                using (DbCommand dc = CreateCommand(query))
                 {
                     using (DbDataReader reader = dc.ExecuteReader())
                     {
@@ -128,6 +138,7 @@ namespace DCF.DataLayer
 
         public int DropTableIfExists(string tableName)
         {
+            Logger.DebugWriteLine(string.Format("Dropping table {0} if exists", tableName));
             return ExecuteNonQuery(string.Format("DROP TABLE IF EXISTS {0}", tableName));
         }
         public int TruncateTable(string tableName)

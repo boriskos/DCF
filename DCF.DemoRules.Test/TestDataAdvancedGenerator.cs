@@ -15,7 +15,7 @@ namespace DCF.DemoRules.Test
         {
         }
 
-        public new bool GenerateBasisTables(DataTable dtTopics, DataTable dtItems, DataTable dtCorrectFacts)
+        public override bool GenerateBasisTables(DataTable dtTopics, DataTable dtItems, DataTable dtCorrectFacts)
         {
             if (InitSection.GenerateBasisTables)
             {
@@ -122,7 +122,9 @@ namespace DCF.DemoRules.Test
         private void GenerateTopicsAndItems(out Items items, out Topics topics)
         {
             topics = new Topics();
+            topics.TopicList = new List<TopicTemplate>();
             items = new Items();
+            items.ItemList = new List<ItemTemplate>();
             Random rnd = new Random();
             var profiles = InitSection.GetTopicsSpecialVariabilityProfiles();
             foreach(var profile in profiles)
@@ -140,11 +142,13 @@ namespace DCF.DemoRules.Test
                     // now create the set of items for the topic
                     int itemsnum = rnd.Next(profile.Second, profile.Third);
                     ItemTemplate item = new ItemTemplate();
-                    item.CorrectValues.Add("t_" + i.ToString());
+                    item.CorrectValues = new List<string>(1);
+                    item.IncorrectValues = new List<string>(itemsnum);
+                    item.CorrectValues.Add(string.Format("t{0}i0", i.ToString()));
                     item.TopicName = topic.Name;
-                    for (int j = 0; j < itemsnum; j++)
+                    for (int j = 1; j < itemsnum; j++) // starts from 1
                     {
-                        item.IncorrectValues.Add(string.Format("f{0}_{1}", i.ToString(), j.ToString()));
+                        item.IncorrectValues.Add(string.Format("t{0}i{1}", i.ToString(), j.ToString()));
                     }
                     items.ItemList.Add(item);
                 }

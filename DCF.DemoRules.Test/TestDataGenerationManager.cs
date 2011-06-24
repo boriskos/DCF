@@ -6,6 +6,9 @@ using System.Configuration;
 using DCF.Common;
 using DCF.DataLayer;
 using System.Data;
+using System.Collections;
+using DCF.Lib;
+using Wintellect.PowerCollections;
 
 namespace DCF.DemoRules.Test
 {
@@ -59,6 +62,15 @@ namespace DCF.DemoRules.Test
                     {
                         m_initSection.TopicsDefinitionFile = arg.Split('=')[1];
                     }
+                    else if (arg.StartsWith(ArgName("UsersCount"), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        m_initSection.UsersCount = long.Parse(arg.Split('=')[1]);
+                    }
+                    else if (arg.StartsWith(ArgName("NumOfTopicsToAnswer"), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        m_initSection.NumOfTopicsToAnswer = long.Parse(arg.Split('=')[1]);
+                    }
+
                     // update connection parameters 
                     else if (arg.StartsWith(ArgName("DBName"), StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -100,7 +112,7 @@ namespace DCF.DemoRules.Test
             m_sqlUtils = new MySqlNativeClientUtils(DBUsername, DBPassword, DBName, HostName);
             SqlUtils.Connect();
             Logger.TraceWriteLine(string.Format("Connected to {0}/{1}@{2}", DBUsername, DBPassword, DBName));
-            m_testDataGenerator = new TestDataGenerator(m_initSection);
+            m_testDataGenerator = new TestDataAdvancedGenerator(m_initSection); //TestDataGenerator(m_initSection);
         }
 
         public void DoTestFlow()
@@ -108,9 +120,11 @@ namespace DCF.DemoRules.Test
             // regenerate Correct Facts table if necessary
             if (m_initSection.GenerateBasisTables)
             {
-                Logger.DebugWriteLine(string.Format("Recreating {0} table...", TableConstants.CorrectFacts));
-                SqlUtils.DropTableIfExists(TableConstants.CorrectFacts);
-                SqlUtils.ExecuteNonQuery("CREATE TABLE CorrectFacts AS (SELECT * FROM Items WHERE 1=0)");
+                // clean the schema (I will recreate all the tables)
+                Logger.DebugWriteLine("Recreating schema tables...");
+                Logger.DebugIndent();
+                RecreateSchemaTables();
+                Logger.DebugUnindent();
                 Logger.DebugWriteLine("Done!");
             }
 
@@ -131,9 +145,11 @@ namespace DCF.DemoRules.Test
                 SqlUtils.TruncateTable(dtItems.TableName);
                 SqlUtils.TruncateTable(dtCorrectFacts.TableName);
                 SqlUtils.TruncateTable(dtTopics.TableName);
-
+                Logger.DebugWrite("Topics...");
                 SqlUtils.RePopulateExistingTable(dtTopics);
+                Logger.DebugWrite("Items...");
                 SqlUtils.RePopulateExistingTable(dtItems);
+                Logger.DebugWrite("CorrectFacts...");
                 SqlUtils.RePopulateExistingTable(dtCorrectFacts);
                 Logger.DebugWriteLine("Done!");
             }
@@ -156,14 +172,137 @@ namespace DCF.DemoRules.Test
             SqlUtils.TruncateTable(dtItemsMentions.TableName);
             SqlUtils.TruncateTable(dtUsers.TableName);
 
+            Logger.DebugWrite("Populating database with users and their items mentions...");
             m_testDataGenerator.SimulateUsersActivity(
                 dtTopics, dtItems, dtCorrectFacts, dtItemsMentions, dtUsers, SqlUtils);
-            // commit changes into the database
-            Logger.DebugWrite("Populating database with users and their items mentions...");
 
-            // users are also inserted in SqlUtils.RePopulateExistingTable(dtUsers);
-            // this table is already been populated SqlUtils.RePopulateExistingTable(dtItemsMentions);
+            dtUsers = null;
+            dtTopics = null;
+            dtItems = null;
+            dtCorrectFacts = null;
+            dtItemsMentions = null; 
+          
+            GC.Collect();
+
+            DataTable dtUserGraph = new DataTable(TableConstants.UserGraph);
+            SqlUtils.ReadTableSchema(TableConstants.UserGraph, dtUserGraph);
+            SqlUtils.TruncateTable(TableConstants.UserGraph);
+            populateUserGraph(dtUserGraph, dtItems.Rows.Count);
+
             Logger.DebugWriteLine("Done!");
+        }
+
+        private void populateUserGraph(DataTable dtUserGraph, int num_of_items)
+        {
+            MySpecialBitArray[] bitAr = new MySpecialBitArray[(int)m_initSection.UsersCount];
+            uint[] totalUserWeight = new uint[(int)m_initSection.UsersCount];
+            for (int i = 0; i < bitAr.Length; i++ )
+                bitAr[i] = new MySpecialBitArray(num_of_items);
+            DataTable dt = new DataTable();
+            SqlUtils.ReadTableSchema(TableConstants.ItemsMentions, dt);
+            for (int i = 0; ; i += TestDataGenerator.LimitOfRows)
+            {
+                SqlUtils.PopulateTableFromDB(dt, string.Format("ID >= {0} AND ID < {1}",
+                    i, i + TestDataGenerator.LimitOfRows));
+                foreach (DataRow row in dt.Rows)
+                {
+                    bitAr[(int)row.Field<uint>("UserID")-1].Set(row.Field<uint>("ItemID")-1);
+                }
+                if (dt.Rows.Count < TestDataGenerator.LimitOfRows)
+                    break;
+            }
+            // count them all
+            Logger.TraceWriteLine("Starting UserGraph table population " + DateTime.Now.ToShortTimeString());
+            uint curRow = 1;
+            for (int i = 0; i < m_initSection.UsersCount; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    uint result = bitAr[i].AndCounting(bitAr[j]);
+                    if (result > 0)
+                    {
+                        totalUserWeight[i]+=result;
+                        totalUserWeight[j]+=result;
+                        dtUserGraph.Rows.Add(curRow++, i + 1, j + 1, 1.0 * result );
+                        dtUserGraph.Rows.Add(curRow++, j + 1, i + 1, 1.0 * result );
+                        if (dtUserGraph.Rows.Count > TestDataGenerator.LimitOfRows)
+                        {
+                            int num = dtUserGraph.Rows.Count;
+                            SqlUtils.PopulateTableToDb(dtUserGraph);
+                            dtUserGraph.Rows.Clear();
+                            GC.Collect();
+                            Logger.TraceWriteLine(string.Format("UserGraph table populated {0} rows", num));
+                        }
+                    }
+                }
+            }
+            Logger.TraceWriteLine("Finished UserGraph table population " + DateTime.Now.ToShortTimeString());
+            SqlUtils.ExecuteNonQuery("ALTER TABLE usergraph ADD INDEX sourceuserid_idx (SourceUserID ASC)") ;
+            Logger.TraceWriteLine("Applied index on UserGraph table " + DateTime.Now.ToShortTimeString());
+            for (int i=0; i<m_initSection.UsersCount; i++)
+            {
+                SqlUtils.ExecuteNonQuery(
+                    string.Format("UPDATE usergraph SET weight = weight/{0} WHERE SourceUserId={1}",
+                    totalUserWeight[i], i));
+                if (i%1000 == 0) 
+                {
+                    Logger.TraceWriteLine(
+                        string.Format("Udated {0} users {1}", i.ToString(), DateTime.Now.ToShortTimeString()));
+                }
+                    
+            }
+            Logger.TraceWriteLine("UserGraph table creation completed " + DateTime.Now.ToShortTimeString());
+        }
+
+        private void RecreateSchemaTables()
+        {
+
+            SqlUtils.DropTableIfExists(TableConstants.ItemsMentions);
+            SqlUtils.DropTableIfExists(TableConstants.Items);
+            SqlUtils.DropTableIfExists(TableConstants.Topics);
+            SqlUtils.DropTableIfExists(TableConstants.UserFactScores);
+            SqlUtils.DropTableIfExists(TableConstants.UserGraph);
+            SqlUtils.DropTableIfExists(TableConstants.Users);
+            SqlUtils.DropTableIfExists(TableConstants.CorrectFacts);
+
+            SqlUtils.ExecuteNonQuery(@"
+CREATE TABLE Items (
+  ItemId int(11) unsigned NOT NULL PRIMARY KEY,
+  name varchar(500) NOT NULL,
+  topicID int(11) unsigned NOT NULL 
+) ENGINE = MyISAM");
+
+            SqlUtils.ExecuteNonQuery(@"
+CREATE TABLE  Topics  (
+   TopicId  int(11) unsigned NOT NULL PRIMARY KEY,
+   TopicName  varchar(200) NOT NULL,
+   TopicType  smallint(1) unsigned zerofill NOT NULL
+) ENGINE=MyISAM");
+
+            SqlUtils.ExecuteNonQuery(@"
+CREATE TABLE Users (
+  UserID int(11) unsigned NOT NULL PRIMARY KEY ,
+  UserName varchar(100) NOT NULL
+) ENGINE=MyISAM");
+
+            SqlUtils.ExecuteNonQuery(@"
+CREATE TABLE  itemsmentions  (
+   ID  int(11) unsigned NOT NULL PRIMARY KEY,
+   userID  int(11) unsigned NOT NULL,
+   itemID  int(11) unsigned NOT NULL,
+   topicID  int(11) unsigned NOT NULL,
+   time  timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=MyISAM");
+
+            SqlUtils.ExecuteNonQuery(@"
+CREATE TABLE  usergraph  (
+   ID  int(11) unsigned NOT NULL PRIMARY KEY ,
+   SourceUserID  int(11) unsigned NOT NULL,
+   TargetUserID  int(11) unsigned NOT NULL,
+   Weight  double NOT NULL DEFAULT '0'
+) ENGINE=MyISAM");
+
+            SqlUtils.ExecuteNonQuery("CREATE TABLE CorrectFacts AS (SELECT * FROM Items WHERE 1=0)");
         }
 
         public void DoTestFlowAdvanced()

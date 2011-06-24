@@ -10,8 +10,6 @@ namespace DCF.Lib
 {
     public class CleansingManager
     {
-        public const int MaxSampleIterationsConst = 50;
-
         public CleansingManager(IRuleSupplier ruleSupplier)
         {
             m_ruleSupplier = ruleSupplier;
@@ -68,12 +66,18 @@ namespace DCF.Lib
                 {
                     Logger.DebugWriteLine("Selected cleaning rules:", Logger.CleaningDataStr);
                     Logger.DebugIndent();
-                    foreach (Rule rule in m_cleaningRulesList)
+                    using (new PerformanceCounter("All rules initiallization"))
                     {
-                        rule.StopCleaningProcess += new EventHandler(SetStopSamping);
-                        rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
-                        rule.init(null);
-                        Logger.DebugWriteLine(rule.Id); ;
+                        foreach (Rule rule in m_cleaningRulesList)
+                        {
+                            rule.StopCleaningProcess += new EventHandler(SetStopSamping);
+                            rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
+                            using (new PerformanceCounter("Initializing rule " + rule.Id))
+                            {
+                                rule.init(null);
+                            } 
+                            Logger.DebugWriteLine(rule.Id); ;
+                        }
                     }
                     Logger.DebugUnindent();
                 }
@@ -86,14 +90,16 @@ namespace DCF.Lib
         }
         protected void ApplyRules(IEnumerable<Rule> rulesList)
         {
-            using (new PerformanceCounter("CleansingManager.ApplyRules"))
+            using (new PerformanceCounter("All rules execution"))
             {
                 Dictionary<string, object> data = new Dictionary<string, object>();
-                data["CheckCleanCitiesConsistency"] = new DCF.Lib.Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
                 data["CurrentIteration"] = new Func<int>(() => CurrentIteration);
                 foreach (Rule r in rulesList)
                 {
-                    r.execute(data);
+                    using (new PerformanceCounter("Execution of rule " + r.Id))
+                    {
+                        r.execute(data);
+                    }
                 }
             }
         }
@@ -123,15 +129,22 @@ namespace DCF.Lib
                 {
                     Logger.DebugWriteLine("Selected sampling rules:", Logger.CleaningDataStr);
                     Logger.DebugIndent();
-                    foreach (Rule rule in m_samplingRulesList)
+                    using (new PerformanceCounter("All rules initiallization"))
                     {
-                        rule.StopCleaningProcess += new EventHandler(SetStopSamping);
-                        rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
-
                         Dictionary<string, object> data = new Dictionary<string, object>();
                         data["CurrentIteration"] = new Func<int>(() => CurrentIteration);
-                        rule.init(data);
-                        Logger.DebugWriteLine(rule.Id);
+
+                        foreach (Rule rule in m_samplingRulesList)
+                        {
+                            rule.StopCleaningProcess += new EventHandler(SetStopSamping);
+                            rule.DataIsClean += new Rule.RuleFinishedDelegate(SetDataIsCleanEventHandler);
+
+                            using (new PerformanceCounter("Initializing rule " + rule.Id))
+                            {
+                                rule.init(data);
+                            }
+                            Logger.DebugWriteLine(rule.Id);
+                        }
                     }
                     Logger.DebugUnindent();
                 }

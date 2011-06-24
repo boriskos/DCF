@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="PageRankRule">
+      <Initialization>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+          UserID int(11) unsigned NOT NULL PRIMARY KEY,
+          Belief double NOT NULL,
+          Version int(11) NULL,
+          NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0 as Belief, 1 as Version, 0 as NumOfFacts FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions im GROUP BY im.UserID) s
+          SET us.NumOfFacts = s.NumOfItems
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS CurrentState (
+          ID INT(11) unsigned NOT NULL AUTO_INCREMENT,
+          CurUserID INT(11) unsigned NOT NULL,
+
+          PRIMARY KEY(ID)
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          TRUNCATE TABLE CurrentState
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO CurrentState (CurUserId) (SELECT UserID FROM users_v ORDER BY UserID limit 100)
+        </NonQueryStatement>
+        
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE UserScores us SET us.Belief = us.Belief + (select count(*) from CurrentState cs where cs.CurUserId=us.UserId)
+        </NonQueryStatement>
+        <RepairKey IdField="ID, CurUserID" KeyField="ID" ProbabilityField="NormalizedWeight"
+           TargetTable="CurrentState">
+          SELECT cs.ID, ug.SourceUserID, ug.TargetUserId as CurUserID, ug.Weight AS NormalizedWeight
+          FROM CurrentState cs left join  UserGraph ug on (cs.CurUserID=ug.SourceUserID)
+
+        </RepairKey>
+      </Body>
+    </Rule>
+	<Rule Id="PageRankConvergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS ConvergenceHistory (
+          Version INT(11) NOT NULL PRIMARY KEY, 
+          Entropy DOUBLE NOT NULL
+        ) ENGINE MyISAM
+      </NonQueryStatement>
+      <NonQueryStatement>
+        TRUNCATE TABLE ConvergenceHistory
+      </NonQueryStatement>
+      <NonQueryStatement>
+        CREATE OR REPLACE VIEW ush_prob_stats AS
+        (SELECT version, MIN(Belief) MinScore, SUM(Belief) TotalScore, COUNT(*) UserCount
+        FROM UserScores)
+      </NonQueryStatement>
+      <NonQueryStatement>
+        CREATE OR REPLACE VIEW ush_prob_norm AS
+        (SELECT up.userid, IF(up.Belief=t.MinScore, 0,
+        (up.Belief-t.MinScore)/(t.TotalScore-t.UserCount*t.MinScore)) UserScore
+        FROM UserScores up, ush_prob_stats t)
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO ConvergenceHistory (Version, Entropy)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version,
+        -SUM(if(us.UserScore=0, 0, us.UserScore*LOG(us.UserScore))) as Entropy FROM ush_prob_norm us)
+      </NonQueryStatement>
+      <EventStatement Raise="$__CleaningInternals__.StopSampling">
+        SELECT if(a.EntCount&lt;5, 0, (a.MaxEntropy-a.MinEntropy)/a.MaxEntropy &lt; 0.01)
+        FROM
+        (SELECT MAX(Entropy) MaxEntropy, MIN(Entropy) MinEntropy, COUNT(*) EntCount FROM ConvergenceHistory
+        WHERE version >= $__CleaningInternals__.CurrentIteration-5) a
+      </EventStatement>
+    </Body>
+	</Rule>
+  </Sampling>
+</Rules>

@@ -113,19 +113,36 @@ namespace DCF.DemoRules.Test
             }
         }
 
-        [ConfigurationProperty("TopicsNumber",
-            DefaultValue = (long)1000,
-            IsRequired = true)]
-        [LongValidator(MinValue = 10, MaxValue = 1000000000, ExcludeRange = false)]
-        public long TopicsNumber
+        [ConfigurationProperty("UsersCount",
+            DefaultValue = (long)10000,
+            IsRequired = false)]
+        [LongValidator(MinValue = 1, MaxValue = 1000000000, ExcludeRange = false)]
+        public long UsersCount
         {
             get
             {
-                return (long)this["TopicsNumber"];
+                return (long)this["UsersCount"];
             }
             set
             {
-                this["TopicsNumber"] = value;
+                this["UsersCount"] = value;
+            }
+
+        }
+
+        [ConfigurationProperty("NumOfTopicsToAnswer",
+            DefaultValue = (long)10,
+            IsRequired = false)]
+        [LongValidator(MinValue = 1, MaxValue = 1000000000, ExcludeRange = false)]
+        public long NumOfTopicsToAnswer
+        {
+            get
+            {
+                return (long)this["NumOfTopicsToAnswer"];
+            }
+            set
+            {
+                this["NumOfTopicsToAnswer"] = value;
             }
 
         }
@@ -141,7 +158,8 @@ namespace DCF.DemoRules.Test
                 Logger.TraceWriteLine(string.Format("TopicsDefinitionFile: {0}", TopicsDefinitionFile));
             if (ItemsDefinitionFile != null)
                 Logger.TraceWriteLine(string.Format("ItemsDefinitionFile: {0}", ItemsDefinitionFile));
-            Logger.TraceWriteLine(string.Format("TopicsNumber: {0}", TopicsNumber));
+            Logger.TraceWriteLine(string.Format("UsersCount: {0}", UsersCount));
+            Logger.TraceWriteLine(string.Format("NumOfTopicsToAnswer: {0}", NumOfTopicsToAnswer));
             
             // report UserProfiles
             List<Pair<double, double>> usersProfilesPortionBelief = GetUserProfiles();
@@ -159,14 +177,15 @@ namespace DCF.DemoRules.Test
                 Logger.TraceUnindent();
             }
             // report TopicProfiles
-            List<Pair<int, int>> topicsProfiles = GetTopicsVariabilityProfiles();
+            List<Triple<int, int, int>> topicsProfiles = GetTopicsSpecialVariabilityProfiles();
             if (topicsProfiles.Count > 0)
             {
                 Logger.TraceWriteLine("Current topic variablility profiles:");
                 Logger.TraceIndent();
                 foreach (var line in topicsProfiles)
                 {
-                    Logger.TraceWriteLine(string.Format("{0} topics have variability of {1} possible incorrect answers", line.First, line.Second));
+                    Logger.TraceWriteLine(string.Format("{0} topics have variability of {1}-{2} possible incorrect answers", 
+                        line.First, line.Second, line.Third));
                 }
                 Logger.TraceUnindent();
             }
@@ -183,13 +202,13 @@ namespace DCF.DemoRules.Test
             GetProfiles<double>(profilesList, profiles, a => double.Parse(a));
             return profilesList;
         }
-        public List<Pair<int, int>> GetTopicsVariabilityProfiles()
-        {
-            List<Pair<int, int>> profilesList = new List<Pair<int, int>>();
-            string profiles = TopicsVariabilityProfile;
-            GetProfiles<int>(profilesList, profiles, a => int.Parse(a));
-            return profilesList;
-        }
+        //public List<Pair<int, int>> GetTopicsVariabilityProfiles()
+        //{
+        //    List<Pair<int, int>> profilesList = new List<Pair<int, int>>();
+        //    string profiles = TopicsVariabilityProfile;
+        //    GetProfiles<int>(profilesList, profiles, a => int.Parse(a));
+        //    return profilesList;
+        //}
         public List<Triple<int, int, int>> GetTopicsSpecialVariabilityProfiles()
         {
             List<Triple<int, int, int>> profilesList = new List<Triple<int, int, int>>();

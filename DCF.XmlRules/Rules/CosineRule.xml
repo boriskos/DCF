@@ -7,26 +7,24 @@
         <NonQueryStatement>
           CREATE TABLE IF NOT EXISTS UserScores (
             UserID int(11) NOT NULL PRIMARY KEY,
-            Belief double NOT NULL,
-            Version int(11) NULL,
-            NumOfFacts int(11) NOT NULL
+            Belief double NOT NULL
           ) ENGINE = MEMORY
         </NonQueryStatement>
         <NonQueryStatement>
-          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
-          (SELECT u.UserID as UserId, 0.2 as Belief, 1 as Version, 0 as NumOfFacts FROM users_v u
+          INSERT INTO UserScores (UserId, Belief)
+          (SELECT u.UserID as UserId, 0.2 as Belief FROM users u
           WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
         </NonQueryStatement>
         <NonQueryStatement>
           UPDATE UserScores us,
-          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions_v im GROUP BY im.UserID) s
-          SET us.NumOfFacts = s.NumOfItems, Version=1, Belief = 2*s.NumOfItems
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions im GROUP BY im.UserID) s
+          SET Belief = 2*s.NumOfItems
           WHERE s.UserID=us.UserID
         </NonQueryStatement>
         <NonQueryStatement>
           UPDATE UserScores us,
-          (SELECT im.userid, count(i.itemid) as TotalItems FROM ItemsMentions_v im, items_v i where i.topicid=im.topicid group BY im.UserID) s
-          SET Belief = Belief/TotalItems-1
+          (SELECT im.userid, count(i.itemid) as TotalItems FROM ItemsMentions im, items i where i.topicid=im.topicid group BY im.UserID) s
+          SET Belief = Belief/TotalItems - 1
           WHERE s.UserID=us.UserID
         </NonQueryStatement>
         <NonQueryStatement>
@@ -35,47 +33,41 @@
             TopicID INT(11) unsigned NOT NULL, 
             Factor int(11) NOT NULL, 
             Score DOUBLE NOT NULL, 
-            Category varchar(70) COLLATE utf8_bin NOT NULL, 
-            Correctness TINYINT(1) NULL, 
 
-            PRIMARY KEY(ItemID),
-            FOREIGN KEY sfItemID_fkey (ItemID) REFERENCES Items (id) ON DELETE CASCADE, 
-            FOREIGN KEY sfTopicID_fkey (TopicID) REFERENCES Topics (TopicID) ON DELETE CASCADE 
+            PRIMARY KEY(ItemID)
           ) ENGINE = MEMORY
         </NonQueryStatement>
         <NonQueryStatement>
-          INSERT INTO ScoredFacts (ItemId, TopicId, Category, Factor, Score)
-          SELECT i.ItemId, i.TopicId, 'Demo' AS Category, 0 AS Factor, 1 AS Score
-          FROM Topics t, Items_v i WHERE t.TopicId=i.TopicId AND t.Category = 'Demo' AND t.TopicType=0 
+          INSERT INTO ScoredFacts (ItemId, TopicId, Factor, Score)
+          SELECT i.ItemId, i.TopicId, 0 AS Factor, 1 AS Score
+          FROM Topics t, Items i WHERE t.TopicId=i.TopicId AND t.TopicType=0 
           AND i.ItemId NOT IN (SELECT ItemID FROM ScoredFacts)
         </NonQueryStatement>
         <NonQueryStatement>
-          UPDATE ScoredFacts sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM ItemsMentions_v im, Topics t
+          UPDATE ScoredFacts sf, (SELECT im.ItemId, COUNT(im.ID) as Factor FROM ItemsMentions im, Topics t
           WHERE t.TopicId=im.TopicId AND t.TopicType=0 GROUP BY im.ItemId) s 
           SET sf.Factor = s.Factor WHERE sf.ItemId = s.ItemId
         </NonQueryStatement>
         <NonQueryStatement>
           CREATE TABLE IF NOT EXISTS RepKeyResults (ItemID int(11) NOT NULL) ENGINE = MEMORY
         </NonQueryStatement>
-        
       </Initialization>
       <Body>
         <NonQueryStatement>
           UPDATE ScoredFacts sf SET sf.Score = 2*
-          IFNULL((SELECT SUM(POW(us1.Belief, 3)) FROM UserScores us1, ItemsMentions_v sfu1
+          IFNULL((SELECT SUM(POW(us1.Belief, 3)) FROM UserScores us1, ItemsMentions sfu1
           WHERE us1.UserId=sfu1.UserId AND sfu1.ItemId=sf.ItemId), 0)/
           (SELECT SUM(POW(us2.Belief, 3)) FROM UserScores us2 WHERE us2.UserId in
-          (SELECT im2.Userid FROM ItemsMentions_v im2 WHERE im2.Topicid=sf.TopicId)) - 1
-          WHERE Category='Demo'
+          (SELECT im2.Userid FROM ItemsMentions im2 WHERE im2.Topicid=sf.TopicId)) - 1
         </NonQueryStatement>
         <NonQueryStatement>
           UPDATE UserScores us SET us.Belief = (1-0.2)*us.Belief + 0.2*
-          (2*(SELECT SUM(sfu1.Score) FROM ScoredFacts sfu1, itemsmentions_v im1 WHERE im1.UserId = us.UserId
-          AND sfu1.ItemId=im1.ItemId AND sfu1.Category='Demo') -
+          (2*(SELECT SUM(sfu1.Score) FROM ScoredFacts sfu1, itemsmentions im1 WHERE im1.UserId = us.UserId
+          AND sfu1.ItemId=im1.ItemId) -
           (SELECT SUM(sf2.Score) FROM ScoredFacts sf2 WHERE sf2.Factor &gt; 0 AND sf2.TopicId IN
-          (SELECT im2.TopicId FROM ItemsMentions_v im2 where im2.Userid=us.UserId) AND sf2.Category='Demo'))/
+          (SELECT im2.TopicId FROM ItemsMentions im2 where im2.Userid=us.UserId) ))/
           (SELECT SQRT(COUNT(*)*SUM(sf1.Score*sf1.Score)) FROM ScoredFacts sf1 WHERE sf1.Factor &gt; 0 AND sf1.TopicId in
-          (SELECT im3.TopicId FROM ItemsMentions_v im3 where im3.UserId=us.UserId) AND sf1.Category='Demo')
+          (SELECT im3.TopicId FROM ItemsMentions im3 where im3.UserId=us.UserId) )
         </NonQueryStatement>
       </Body>
     </Rule>
@@ -87,7 +79,7 @@
           UserId INT(11) NOT NULL, 
           UserScore DOUBLE NOT NULL, 
           INDEX UserScoresHistory_userIdx (UserId ASC) 
-        ) ENGINE MEMORY
+        ) ENGINE MyISAM
       </NonQueryStatement>
     </Initialization>
     <Body>

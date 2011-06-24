@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+  <Cleaning/>
+  <Sampling>
+    <Rule Id="FixedPointPageRankRule">
+      <Initialization>
+        <NonQueryStatement>
+          DROP TABLE IF EXISTS Constants
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS Constants AS ( SELECT COUNT(*) as N FROM Users )
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE TABLE IF NOT EXISTS UserScores (
+          UserID int(11) unsigned NOT NULL PRIMARY KEY,
+          Belief double NOT NULL,
+          Version int(11) NULL,
+          NumOfFacts int(11) NOT NULL
+          ) ENGINE = MEMORY
+        </NonQueryStatement>
+        <NonQueryStatement>
+          INSERT INTO UserScores (UserId, Belief, Version, NumOfFacts)
+          (SELECT u.UserID as UserId, 0 as Belief, 1 as Version, 0 as NumOfFacts 
+    		  FROM users_v u
+          WHERE u.UserID NOT IN (SELECT us.UserId FROM UserScores us))
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us,
+          (SELECT im.UserID, COUNT(*) as NumOfItems FROM ItemsMentions im GROUP BY im.UserID) s
+          SET us.NumOfFacts = s.NumOfItems
+          WHERE s.UserID=us.UserID
+        </NonQueryStatement>
+        <NonQueryStatement>
+          UPDATE UserScores us, Constants c SET us.Belief = 1/c.N
+        </NonQueryStatement>
+        <NonQueryStatement>
+          CREATE OR REPLACE VIEW ScoredGraph AS
+          SELECT ug.*, SUM(us.Belief*ug.Weight) as TargetScore
+          FROM UserGraph ug, UserScores us
+          WHERE ug.SourceUserId=us.UserId
+          GROUP BY ug.TargetUserId
+        </NonQueryStatement>
+      </Initialization>
+      <Body>
+        <NonQueryStatement>
+          UPDATE UserScores us, ScoredGraph ug, Constants c
+          SET us.Belief = 0.15/c.N + 0.85*ug.TargetScore
+          WHERE us.UserId=ug.TargetUserId
+        </NonQueryStatement>
+      </Body>
+    </Rule>
+	<Rule Id="PageRankConvergence">
+    <Initialization>
+      <NonQueryStatement>
+        CREATE TABLE IF NOT EXISTS ConvergenceHistory (
+        Version INT(11) NOT NULL PRIMARY KEY,
+        Entropy DOUBLE NOT NULL
+        ) ENGINE MyISAM
+      </NonQueryStatement>
+      <NonQueryStatement>
+        TRUNCATE TABLE ConvergenceHistory
+      </NonQueryStatement>
+    </Initialization>
+    <Body>
+      <NonQueryStatement>
+        INSERT INTO ConvergenceHistory (Version, Entropy)
+        (SELECT $__CleaningInternals__.CurrentIteration as Version,
+        -SUM(us.Belief*LOG(us.Belief)) as Entropy FROM UserScores us)
+      </NonQueryStatement>
+      <EventStatement Raise="$__CleaningInternals__.StopSampling">
+        SELECT if(a.EntCount&lt;5, 0, (a.MaxEntropy-a.MinEntropy)/a.MaxEntropy &lt; 0.01)
+        FROM
+        (SELECT MAX(Entropy) MaxEntropy, MIN(Entropy) MinEntropy, COUNT(*) EntCount FROM ConvergenceHistory
+        WHERE version >= $__CleaningInternals__.CurrentIteration-5) a
+      </EventStatement>
+    </Body>
+  </Rule>
+  </Sampling>
+</Rules>

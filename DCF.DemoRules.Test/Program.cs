@@ -40,6 +40,12 @@ namespace DCF.DemoRules.Test
                             Usage();
                         }
                         break;
+                    case "generate_files":
+                        if (!GenerateFiles(args))
+                        {
+                            Usage();
+                        }
+                        break;
                     case "clean":
                         if (!CleanDatabase(args))
                         {
@@ -65,9 +71,21 @@ namespace DCF.DemoRules.Test
                 DateTime endTime = DateTime.Now;
                 Logger.TraceWriteLine(string.Format("Finishing the process at {0}. Total runtime is {1} sec",
                     endTime.ToLongTimeString(), (endTime - startTime).TotalSeconds));
-                Logger.DebugWriteLine(PerformanceCounterStatic.ReportAllTimers());
+                Logger.TraceWriteLine(PerformanceCounterStatic.ReportAllTimers());
                 Logger.DebugFlush();
             }
+        }
+
+        private static bool GenerateFiles(string[] args)
+        {
+            TestTextFilesGenerator gen = new TestTextFilesGenerator();
+            gen.ParseArgs(args.Skip(1).ToArray());
+            Logger.TraceWriteLine("Creating a state");
+            //gen.GenerateState();
+            gen.GenerateUsersConcurrently();
+            //Logger.TraceWriteLine("Generating files");
+            //gen.CreateBasisTablesFiles();
+            return true;
         }
 
         private static bool ReadXml(string[] args)
@@ -145,6 +163,11 @@ namespace DCF.DemoRules.Test
             Logger.TraceWriteLine(string.Format("Usage: {0} <operation> <options>", Process.GetCurrentProcess().MainModule.ModuleName));
             Logger.TraceWriteLine("Where <operation> can be:");
             Logger.TraceIndent();
+            Logger.TraceWriteLine("generate_files - generates the synthetic database in files");
+            Logger.TraceIndent();
+            Logger.TraceWriteLine("Use LOAD DATA FROM command to load thess files");
+            Logger.TraceWriteLine("");
+            Logger.TraceUnindent();
             Logger.TraceWriteLine("generate - generates the synthetic database");
             Logger.TraceWriteLine("<option> can be the following:");
             Logger.TraceIndent();
@@ -157,6 +180,10 @@ namespace DCF.DemoRules.Test
             Logger.TraceWriteLine("");
             Logger.TraceWriteLine("clean - cleans the database by running set of algorithms");
             Logger.TraceWriteLine("continous-cleaning - cleans the database continously");
+            Logger.TraceWriteLine("read_xml - loads the provided XML file with rules and runs them");
+            Logger.TraceIndent();
+            Logger.TraceWriteLine("Provide full path to rules XML file");
+            Logger.TraceWriteLine("");
 
             Logger.TraceUnindent();
         }

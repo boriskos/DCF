@@ -13,22 +13,24 @@ namespace DCF.DemoRules.Test
 {
     public class TestDataGenerator
     {
-        const int LimitOfRows = 100000;
+        public const int LimitOfRows = 100000;
 
-        private class User
+        public class User
         {
             public static Random rnd = new Random();
             static int userNum = 1;
-            public User(double confidence, int topicsCount)
+            public User(double confidence, int topicsCount, int numOfTopicsToAnswer)
             {
                 Confidence = confidence;
                 Id = userNum++;
                 Name = string.Format("User_{0}_{1}", Confidence, Id);
-                m_topicsCount = topicsCount;
-                m_categoriesList = new int[topicsCount];
+                m_categoriesList = new int[numOfTopicsToAnswer];
+                int[] tmp = new int[topicsCount];
                 for (int i = 0; i < topicsCount; i++)
-                    m_categoriesList[i] = i;
-                m_categoriesList = m_categoriesList.OrderBy(i => rnd.NextDouble()).ToArray(); // randomize
+                    tmp[i] = i;
+                tmp = tmp.OrderBy(i => rnd.NextDouble()).ToArray(); // randomize
+                for (int i = 0; i < numOfTopicsToAnswer; i++)
+                    m_categoriesList[i] = tmp[i];
             }
             public double Confidence { get; private set; }
             public int Id { get; private set; }
@@ -37,7 +39,7 @@ namespace DCF.DemoRules.Test
             public bool GetNextTopic(out int topicIndex) 
             {
                 topicIndex = 0;
-                if (m_topicsCount > m_curCategory)
+                if (m_categoriesList.Length > m_curCategory)
                 {
                     topicIndex = m_categoriesList[m_curCategory];
                     m_curCategory++;
@@ -48,7 +50,6 @@ namespace DCF.DemoRules.Test
 
             private int[] m_categoriesList = null;
             private int m_curCategory = 0;
-            private int m_topicsCount;
         }
 
         public TestDataGenerator(InitSection m_initSection)
@@ -56,7 +57,7 @@ namespace DCF.DemoRules.Test
             this.m_initSection = m_initSection;
         }
 
-        public bool GenerateBasisTables(DataTable dtTopics, DataTable dtItems, DataTable dtCorrectFacts)
+        public virtual bool GenerateBasisTables(DataTable dtTopics, DataTable dtItems, DataTable dtCorrectFacts)
         {
             if (m_initSection.GenerateBasisTables)
             {
@@ -87,7 +88,7 @@ namespace DCF.DemoRules.Test
         /// run (3.0) n times for current topic
         /// 4) add the new row to ItemsMentions table
         /// </remarks>
-        public void SimulateUsersActivity(
+        public virtual void SimulateUsersActivity(
             DataTable dtTopics, DataTable dtItems,
             DataTable dtCorrectFacts, DataTable dtItemsMentions, DataTable dtUsers,
             MySqlUtils sqlUtils)
@@ -102,26 +103,31 @@ namespace DCF.DemoRules.Test
             int topicsCount = (from r in dtItems.AsEnumerable() select r.Field<uint>("TopicId")).Distinct().Count();
             Dictionary<int, int> topicId2CorrectCount = CreateTopicId2CorrectCountMap(dtCorrectFacts);
             int correctFactsCount = dtCorrectFacts.Rows.Count;
-            int numberOfUsers = (int)m_initSection.NumberOfFacts / topicsCount + 10;
+            int numberOfUsers = (int)m_initSection.UsersCount;
+            if (numberOfUsers == 0)
+            {
+                numberOfUsers = (int)m_initSection.NumberOfFacts / topicsCount + 10;
+            }
+            int numOfTopicsToAnswer = (int)m_initSection.NumOfTopicsToAnswer;
             List<User> listOfUsers = new List<User>(numberOfUsers);
             int currentUser = 0;
-            Dictionary<int, int> restrictedTopics = 
-                DrawRestrictedTopics(m_initSection.GetTopicsVariabilityProfiles(), topicsCount);
+            // topics variablility is handled by 
+            //Dictionary<int, int> restrictedTopics = 
+            //    DrawRestrictedTopics(m_initSection.GetTopicsVariabilityProfiles(), topicsCount);
             // stats
             int[] answerStats = new int[2] { 0, 0 };
 
             // first populate the users
             for (int i = 0; i < numberOfUsers; i++)
             {
-                CreateUser(userRnd, userProfile, listOfUsers, topicsCount);
+                CreateUser(userRnd, userProfile, listOfUsers, topicsCount, numOfTopicsToAnswer);
             }
             PopulateUsersTable(listOfUsers, dtUsers);
             sqlUtils.RePopulateExistingTable(dtUsers); // add users into DB
 
             // now populate items mentions
-            while (currentFactsNum < m_initSection.NumberOfFacts)
+            while (currentFactsNum < numberOfUsers*numOfTopicsToAnswer)
             {
-                int fixedUser = currentUser + numberOfUsers;
                 User user = listOfUsers[currentUser++ % numberOfUsers];
 
                 // get a topic and move it to used
@@ -155,7 +161,7 @@ namespace DCF.DemoRules.Test
                     PopulateCorrectAnswers(dtCorrectFacts, dtItemsMentions, user, topicId, answers[0]);
                 if (answers[1] > 0) // incorrect answers
                     populateIncorrectAnswers(dtItems, dtItemsMentions, user, topicId, 
-                        topicId2CorrectCount[topicId], answers[1], restrictedTopics);
+                        topicId2CorrectCount[topicId], answers[1]);
                 currentFactsNum += answers[0] + answers[1];
                 // stats
                 answerStats[0] += answers[0]; 
@@ -215,14 +221,16 @@ namespace DCF.DemoRules.Test
         {
             foreach (User user in listOfUsers)
             {
-                dtUsers.Rows.Add( user.Id, string.Format("{0}@tau.ac.il", user.Name), 0, DateTime.Now, 0, 0, user.Name);
+                // dtUsers.Rows.Add( user.Id, string.Format("{0}@tau.ac.il", user.Name), 0, DateTime.Now, 0, 0, user.Name);
+                dtUsers.Rows.Add( user.Id, user.Name);
             }
         }
 
-        private void CreateUser(Random userRnd, List<Pair<double, double>> userProfile, List<User> listOfUsers, int topicsCount)
+        private void CreateUser(Random userRnd, List<Pair<double, double>> userProfile, 
+            List<User> listOfUsers, int topicsCount, int numOfTopicsToAnswer)
         {
             // create user
-            User user = new User(DrawConfidence(userRnd.NextDouble(), userProfile), topicsCount);
+            User user = new User(DrawConfidence(userRnd.NextDouble(), userProfile), topicsCount, numOfTopicsToAnswer);
             listOfUsers.Add(user);
         }
 
@@ -232,8 +240,7 @@ namespace DCF.DemoRules.Test
             User user, 
             int topicId, 
             int correcFactsCount, 
-            int answersCount,
-            Dictionary<int, int> restrictedTopics)
+            int answersCount)
         {
             Random rnd = new Random();
             var allAnswers = from r in dtItems.AsEnumerable()
@@ -241,25 +248,13 @@ namespace DCF.DemoRules.Test
                              orderby r.Field<uint>("ItemId") ascending
                              select new { ItemId = r.Field<uint>("ItemId") };
             int lowId = (int)allAnswers.First().ItemId + correcFactsCount;
-            int highId;
-            if (restrictedTopics.TryGetValue(topicId, out highId))
-            {
-                Logger.Assert(highId >= answersCount, 
-                    string.Format("Restriction is too tight: for user {0} who should choose {1} answers with restriction of {2} possible wrong answers",
-                    user, answersCount, highId));
-                highId += lowId-1;
-            }
-            else
-            {
-                highId = int.MaxValue;
-            }
             var incorrectAnswers = from r in allAnswers
-                                   where (lowId <= r.ItemId && r.ItemId <= highId)
+                                   where (lowId <= r.ItemId)
                                    orderby rnd.NextDouble()
                                    select r;
             foreach (var incorrectItem in incorrectAnswers)
             {
-                dtItemsMentions.Rows.Add(m_sMentionId++, user.Id, incorrectItem.ItemId, DateTime.Now);
+                dtItemsMentions.Rows.Add(m_sMentionId++, user.Id, incorrectItem.ItemId, topicId, DateTime.Now);
                 if (--answersCount == 0) break; // stop after we add answers[1] of incorrect answers
             }
         }
@@ -278,7 +273,7 @@ namespace DCF.DemoRules.Test
                                  select new { ItemId = r.Field<uint>("ItemId") };
             foreach (var correctItem in correctAnswers)
             {
-                dtItemsMentions.Rows.Add(m_sMentionId++, user.Id, correctItem.ItemId, DateTime.Now);
+                dtItemsMentions.Rows.Add(m_sMentionId++, user.Id, correctItem.ItemId, topicId, DateTime.Now);
                 if (--answersCount == 0) break; // stop after we add answersCount of correct answers
             }
         }
@@ -353,8 +348,7 @@ namespace DCF.DemoRules.Test
             {
                 if (topic.Values == null || topic.Values.Count == 0)
                 {
-                    dtTopics.Rows.Add(topicId++, topic.Name, 
-                        topic.Text, 0, topic.Category, 0.0, String.Empty);
+                    dtTopics.Rows.Add(topicId++, topic.Name, (int)topic.Type);
                 }
                 else
                 {

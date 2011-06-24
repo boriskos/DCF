@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.Data.Common;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 
 namespace DCF.DataLayer
 {
@@ -24,10 +25,15 @@ namespace DCF.DataLayer
         public override string ConnectionString
         {
             get 
-            { 
-                return string.Format(
-                    "Data Source={3};Initial Catalog={0};User Id={1};Password={2};default command timeout=600",
-                    this.DbName, this.UserName, this.Password, this.HostName); 
+            {
+                string res = ConfigurationManager.AppSettings["DBConnectionString"];
+                if ( res == null)
+                {
+                    res = string.Format(
+                        "Data Source={3};Initial Catalog={0};User Id={1};Password={2};default command timeout=6000;Allow User Variables=true",
+                        this.DbName, this.UserName, this.Password, this.HostName);
+                }
+                return res;
             }
         }
 
