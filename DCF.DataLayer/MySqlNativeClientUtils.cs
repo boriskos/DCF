@@ -26,13 +26,14 @@ namespace DCF.DataLayer
         {
             get 
             {
-                string res = ConfigurationManager.AppSettings["DBConnectionString"];
-                if ( res == null)
+                string connStringTempl = ConfigurationManager.AppSettings["DBConnectionString"];
+				if (connStringTempl == null)
                 {
-                    res = string.Format(
-                        "Data Source={3};Initial Catalog={0};User Id={1};Password={2};default command timeout=6000;Allow User Variables=true",
-                        this.DbName, this.UserName, this.Password, this.HostName);
-                }
+					connStringTempl = 
+						"Data Source={0};Initial Catalog={1};User Id={2};Password={3};default command timeout=6000;Allow User Variables=true";
+				}
+                string res = string.Format( connStringTempl, 
+					this.HostName, this.DbName, this.UserName, this.Password );
                 return res;
             }
         }

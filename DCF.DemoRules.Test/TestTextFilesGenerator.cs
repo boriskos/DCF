@@ -58,6 +58,10 @@ namespace DCF.DemoRules.Test
                     {
                         m_initSection.NumOfTopicsToAnswer = long.Parse(arg.Split('=')[1]);
                     }
+                    else if (arg.StartsWith(ArgName("WorkingDirectory"), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        m_workingDirectory = arg.Split('=')[1];
+                    }
                     else
                     {
                         Logger.TraceWriteLine(string.Format("Unknown command line parameter: {0}", arg));
@@ -139,7 +143,8 @@ namespace DCF.DemoRules.Test
         private void UserGraphFileCreation()
         {
             Logger.TraceWriteLine("creation of usergraph " + DateTime.Now.ToLongTimeString());
-            using (StreamWriter fs_usergraph = new StreamWriter("UserGraph.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "UserGraph.dat");
+			using (StreamWriter fs_usergraph = new StreamWriter(filename, false, Encoding.ASCII))
             {
                 int cur_id = 1;
                 DateTime time = DateTime.Now;
@@ -193,7 +198,8 @@ namespace DCF.DemoRules.Test
         private void ItemsMentionsCreation()
         {
             Logger.TraceWrite("creation of mentions " + DateTime.Now.ToLongTimeString());
-            using (StreamWriter fs_correctfacts = new StreamWriter("ItemsMentions.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "ItemsMentions.dat");
+			using (StreamWriter fs_correctfacts = new StreamWriter(filename, false, Encoding.ASCII))
             {
                 int cur_id = 1;
                 for (int i = 0; i < m_bitAr.Length; i++)
@@ -218,7 +224,8 @@ namespace DCF.DemoRules.Test
         private void CorrectFactsFileCreation()
         {
             Logger.TraceWriteLine("creation of correct " + DateTime.Now.ToLongTimeString());
-            using (StreamWriter fs_correctfacts = new StreamWriter("CorrectFacts.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "CorrectFacts.dat");
+            using (StreamWriter fs_correctfacts = new StreamWriter(filename, false, Encoding.ASCII))
             {
 
                 for (int i = 0; i < m_topics_num; i++)
@@ -236,7 +243,8 @@ namespace DCF.DemoRules.Test
         private void ItemsFileCreation()
         {
             Logger.TraceWriteLine("creation of items " + DateTime.Now.ToLongTimeString());
-            using (StreamWriter fs_items = new StreamWriter("Items.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "Items.dat");
+			using (StreamWriter fs_items = new StreamWriter(filename, false, Encoding.ASCII))
             {
 
                 for (int i = 0; i < m_topics_num * m_items_num_per_topic; i++)
@@ -256,7 +264,9 @@ namespace DCF.DemoRules.Test
         private void TopicsFileCreation()
         {
             Logger.TraceWriteLine("creation of topics " + DateTime.Now.ToLongTimeString());
-            using (StreamWriter fs_topics = new StreamWriter("Topics.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "Topics.dat");
+
+            using (StreamWriter fs_topics = new StreamWriter(filename, false, Encoding.ASCII))
             {
 
                 for (int i = 0; i < m_topics_num; i++)
@@ -274,7 +284,8 @@ namespace DCF.DemoRules.Test
         {
             Logger.TraceWriteLine("creation of users " + DateTime.Now.ToLongTimeString());
             // users
-            using (StreamWriter fs_users = new StreamWriter("Users.dat", false, Encoding.ASCII))
+			string filename = Path.Combine(m_workingDirectory, "Users.dat");
+			using (StreamWriter fs_users = new StreamWriter(filename, false, Encoding.ASCII))
             {
 
                 for (int i = 0; i < m_initSection.UsersCount; i++)
@@ -390,5 +401,6 @@ namespace DCF.DemoRules.Test
         int m_items_num_per_topic;
         int m_totalCorrectAnswers = 0;
         int m_numOfThreadsToFinish = 0;
+		string m_workingDirectory = string.Empty;
     }
 }

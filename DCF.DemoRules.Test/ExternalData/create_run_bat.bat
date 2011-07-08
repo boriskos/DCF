@@ -7,22 +7,33 @@ for /F %%i in (db_sizes.txt) do (
 			for /L %%k in (0,1,3) do (
 				echo echo. ^>^> Data/Output_%%i.txt
 				if %%k==0 (
-					echo echo ++++++++++ NumberOfFacts = %%i UserProfiles = %%j TopicsVariabilityProfile = %%l ++++++++++++ ^>^> Data/Output_%%i.txt
-					echo DCF.DemoRules.Test.exe generate /NumberOfFacts=%%i /UserProfiles=%%j /TopicsVariabilityProfile=%%l ^>^> Data/Creation_%%i.txt
-					echo echo ======== Experiment RepairPrimaryKey =========== ^>^> Data/Output_%%i.txt
+					echo echo ++++++++++ NumberOfUsers = %%i UserProfiles = %%j NumOfTopicsToAnswer = %%l ++++++++++++ ^>^> Data/Output_%%i.txt
+					echo del e:\temp\*.dat ^>NUL 2^>NUL
+					echo DCF.DemoRules.Test.exe generate_files /UsersCount=%%i /UserProfiles=%%j /NumOfTopicsToAnswer=%%l /WorkingDirectory=e:\temp ^>^> Data/Creation_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!clean_state.sql
+					echo mysql -uboris -pboris target ^< e:\temp\!clean_basis_tables.sql
+					echo mysql -uboris -pboris target ^< e:\temp\load_all.sql
+					echo echo ======== Experiment Cosine =========== ^>^> Data/Output_%%i.txt
+					echo DCF.DemoRules.Test.exe read-XML Rules\_CosineRule.xml ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!count_correct_facts_ratio.sql ^>^> Data/Output_%%i.txt
 				) 
 				if %%k==1 (
-					echo echo ======== Experiment TwoEstimates =========== ^>^> Data/Output_%%i.txt
+					echo echo ======== Experiment FixedPoint PageRank =========== ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!clean_state.sql
+					echo DCF.DemoRules.Test.exe read-XML Rules\_FixedPageRankRule.xml ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!count_correct_facts_ratio.sql ^>^> Data/Output_%%i.txt
 				)
 				if %%k==2 (
-					echo echo ======== Experiment Cosine =========== ^>^> Data/Output_%%i.txt
+					echo echo ======== Experiment Prob PageRank =========== ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!clean_state.sql
+					echo DCF.DemoRules.Test.exe read-XML Rules\_PageRankRule.xml ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!count_correct_facts_ratio.sql ^>^> Data/Output_%%i.txt
 				)
 				if %%k==3 (
 					echo echo ======== Experiment Majority =========== ^>^> Data/Output_%%i.txt
-				)
-				for /L %%t in (1,1,3) do (
-					echo echo -------- try %%t ------------- ^>^> Data/Output_%%i.txt
-					echo DCF.DemoRules.Test.exe clean /ExperimentType=%%k ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!clean_state.sql
+					echo DCF.DemoRules.Test.exe read-XML Rules\_MajorityRule.xml ^>^> Data/Output_%%i.txt
+					echo mysql -uboris -pboris target ^< e:\temp\!count_correct_facts_ratio_maj.sql ^>^> Data/Output_%%i.txt
 				)
 			)
 		)

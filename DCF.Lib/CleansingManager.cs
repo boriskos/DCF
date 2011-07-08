@@ -62,7 +62,7 @@ namespace DCF.Lib
             {
                 m_cleaningRulesList = m_ruleSupplier.GetCleaningRules();
 
-                if (m_cleaningRulesList != null || m_cleaningRulesList.Count != 0)
+                if (m_cleaningRulesList != null && m_cleaningRulesList.Count != 0)
                 {
                     Logger.DebugWriteLine("Selected cleaning rules:", Logger.CleaningDataStr);
                     Logger.DebugIndent();
@@ -110,7 +110,6 @@ namespace DCF.Lib
         {
             using (new PerformanceCounter("CleansingManager.CompleteCleaningCycle"))
             {
-                Dictionary<string, object> data = new Dictionary<string, object>();
                 m_dataIsClean = false;
                 IEnumerable<Rule> rules = SelectRulesForCompletion(involvedTableNames);
                 if (rules != null)
@@ -125,7 +124,7 @@ namespace DCF.Lib
             if (m_samplingRulesList == null)
             {
                 m_samplingRulesList = m_ruleSupplier.GetSampleRules();
-                if (m_samplingRulesList != null || m_samplingRulesList.Count!=0)
+                if (m_samplingRulesList != null && m_samplingRulesList.Count!=0)
                 {
                     Logger.DebugWriteLine("Selected sampling rules:", Logger.CleaningDataStr);
                     Logger.DebugIndent();
