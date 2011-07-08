@@ -82,7 +82,7 @@ namespace DCF.DemoRules.Test
             gen.ParseArgs(args.Skip(1).ToArray());
             Logger.TraceWriteLine("Creating a state");
             //gen.GenerateState();
-            gen.GenerateUsersConcurrently();
+            gen.GenerateClusteredUsersConcurrently();
             //Logger.TraceWriteLine("Generating files");
             //gen.CreateBasisTablesFiles();
             return true;

@@ -148,7 +148,6 @@ namespace DCF.DemoRules.Test
             {
                 int cur_id = 1;
                 DateTime time = DateTime.Now;
-
                 for (int i = m_bitAr.Length - 1; i >= 0; i--)
                 {
                     for (int j = i - 1; j >= 0; j--)
@@ -161,7 +160,10 @@ namespace DCF.DemoRules.Test
                         }
                     }
                 }
-                Logger.TraceWriteLine("creation of usergraph finished calculation " + DateTime.Now.ToLongTimeString());
+                DCF.Common.PerformanceCounterStatic.ReportTimer("Total User Weight Calc");
+                Logger.TraceWriteLine(string.Format(
+                    "creation of usergraph finished calculation {0} - {1}", DateTime.Now.ToLongTimeString(),
+                    DCF.Common.PerformanceCounterStatic.ReportTimer("Total User Weight Calc")));
                 for (int i = m_bitAr.Length - 1; i >= 0; i--)
                 {
                     for (int j = i - 1; j >= 0; j--)
@@ -175,8 +177,8 @@ namespace DCF.DemoRules.Test
                     }
                     if (i % 1000 == 0)
                     {
-                        Logger.TraceWriteLine(string.Format("Cretion of 1000 users finished after {0} seconds",
-                            (DateTime.Now - time).TotalSeconds));
+                        Logger.TraceWriteLine(string.Format("Cretion of 1000 users finished after {0} seconds (current user {1})",
+                            (DateTime.Now - time).TotalSeconds, i));
                         time = DateTime.Now;
                     }
                 } // for i
@@ -402,5 +404,156 @@ namespace DCF.DemoRules.Test
         int m_totalCorrectAnswers = 0;
         int m_numOfThreadsToFinish = 0;
 		string m_workingDirectory = string.Empty;
+        void FinishClusteredUserCreation(IAsyncResult ar)
+        {
+            CreateClusteredUserActivityDelegate gu = (CreateClusteredUserActivityDelegate)ar.AsyncState;
+            uint correct = gu.EndInvoke(ar);
+            System.Threading.Interlocked.Add(ref m_totalCorrectAnswers, (int)correct);
+            System.Threading.Interlocked.Add(ref m_numOfThreadsToFinish, -1);
+        }
+        internal void GenerateClusteredUsersConcurrently()
+        {
+            System.Threading.ThreadPool.SetMaxThreads(10, 1000);
+            List<Triple<int, int, int>> list = m_initSection.GetTopicsSpecialVariabilityProfiles();
+            Trace.Assert(list.Count == 1);
+            Trace.Assert(list[0].Second == list[0].Third);
+            m_items_num_per_topic = list[0].Second;
+            m_topics_num = list[0].First;
+            List<Pair<double, double>> userProfiles = m_initSection.GetUserProfiles();
+            Trace.Assert(userProfiles.Count == 1);
+            double userConfidence = userProfiles[0].Second;
+            const uint UserChunk = 1000;
+
+            uint usersCount = (uint)m_initSection.UsersCount;
+            uint numTopicsToAnswer = (uint)m_initSection.NumOfTopicsToAnswer;
+            uint clusterCount = usersCount / UserChunk ;
+
+            // check if number of topics is sufficient
+            if (m_topics_num / clusterCount < 10)
+            {
+                Logger.TraceWriteLine(string.Format("Number of topics ({0}) is not sufficient to devide into {1} clusters",
+                    m_topics_num, clusterCount));
+                Environment.Exit(1);
+            }
+            ///////////////////////////////////////////////////////////////////////////////////
+            // create users
+            for (uint curCluster = 0; curCluster < clusterCount; curCluster++)
+            {
+                CreateClusteredUserActivityDelegate curDel = new CreateClusteredUserActivityDelegate(CreateClusteredUserActivity);
+                curDel.BeginInvoke(curCluster, UserChunk, clusterCount, usersCount, (uint)m_topics_num, numTopicsToAnswer, 
+                    (uint)m_items_num_per_topic, userConfidence, m_bitAr, 
+                    FinishClusteredUserCreation, curDel);
+                System.Threading.Interlocked.Add(ref m_numOfThreadsToFinish, 1);
+            }
+
+            FileCreation ufc = new FileCreation(UsersFileCreation);
+            FileCreation tfc = new FileCreation(TopicsFileCreation);
+            FileCreation ifc = new FileCreation(ItemsFileCreation);
+            FileCreation cffc = new FileCreation(CorrectFactsFileCreation);
+
+            Logger.TraceWriteLine(string.Format("Starting dump of {0}", "correct facts"));
+            IAsyncResult cffcar = cffc.BeginInvoke(null, null);
+            Logger.TraceWriteLine(string.Format("Starting dump of {0}", "users"));
+            IAsyncResult ufcar = ufc.BeginInvoke(null, null);
+            Logger.TraceWriteLine(string.Format("Starting dump of {0}", "topics"));
+            IAsyncResult tfcar = tfc.BeginInvoke(null, null);
+            Logger.TraceWriteLine(string.Format("Starting dump of {0}", "items"));
+            IAsyncResult ifcar = ifc.BeginInvoke(null, null);
+
+            Logger.TraceWrite("Wainting for threads to finish ");
+            while (m_numOfThreadsToFinish > 0)
+            {
+                Logger.TraceWrite(".");
+                System.Threading.Thread.Sleep(100);
+            }
+            Logger.TraceWriteLine(" Done!");
+
+            Logger.TraceWriteLine(string.Format("Generated {0} facts with {1} correct - ratio of DB {2}",
+                m_initSection.NumOfTopicsToAnswer * m_initSection.UsersCount, m_totalCorrectAnswers,
+                ((double)m_totalCorrectAnswers) / (m_initSection.NumOfTopicsToAnswer * m_initSection.UsersCount)));
+
+            FileCreation imfc = new FileCreation(ItemsMentionsCreation);
+            FileCreation ugfc = new FileCreation(UserGraphFileCreation);
+
+            IAsyncResult imfcar = imfc.BeginInvoke(null, null);
+            IAsyncResult ugfcar = ugfc.BeginInvoke(null, null);
+
+            Logger.TraceWriteLine("Waiting all threads to finish");
+
+            ufc.EndInvoke(ufcar);
+            Logger.TraceWriteLine("Users creation finished");
+            tfc.EndInvoke(tfcar);
+            Logger.TraceWriteLine("Topics creation finished");
+            ifc.EndInvoke(ifcar);
+            Logger.TraceWriteLine("Items creation finished");
+            cffc.EndInvoke(cffcar);
+            Logger.TraceWriteLine("Correct Facts creation finished");
+
+            imfc.EndInvoke(imfcar);
+            Logger.TraceWriteLine("ItemsMentions creation finished");
+            ugfc.EndInvoke(ugfcar);
+            Logger.TraceWriteLine("UserGraph creation finished");
+
+        }
+
+        private delegate uint CreateClusteredUserActivityDelegate(uint curCluster, uint UserChunk, uint clusterCount, uint usersCount,
+            uint topics_num, uint numTopicsToAnswer, uint items_num_per_topic, double userConfidence,
+            MySpecialBitArray[] userSimulation);
+
+        private class RandomComparer : IComparer<uint>
+        {
+            Random rnd = new Random();
+            #region IComparer<uint> Members
+
+            public int Compare(uint x, uint y)
+            {
+                if (rnd.NextDouble() <= 0.5)
+                {
+                    return 1;
+                }
+                return -1;
+            }
+
+            #endregion
+        }
+
+        private uint CreateClusteredUserActivity(uint curCluster, uint UserChunk, uint clusterCount, uint usersCount, 
+            uint topics_num, uint numTopicsToAnswer, uint items_num_per_topic, double userConfidence, 
+            MySpecialBitArray[] userSimulation)
+        {
+            uint correctAns = 0;
+            uint minTopic = curCluster * topics_num / clusterCount;
+            uint maxTopic = (curCluster + 1) * topics_num / clusterCount;
+
+            uint minUser = curCluster * usersCount / UserChunk;
+            uint maxUser = minUser + UserChunk;
+            Random rnd = new Random();
+            RandomComparer rndCmp = new RandomComparer();
+            Random anotherRnd = new Random();
+            for (uint userInd = minUser; userInd < maxUser; userInd++)
+            {
+                userSimulation[userInd] = new MySpecialBitArray(topics_num * items_num_per_topic);
+                uint[] topicsToAnswer = new uint[maxTopic - minTopic];
+                for (uint i = 0; i < maxTopic - minTopic; i++)
+                {
+                    topicsToAnswer[i] = i + minTopic;
+                }
+                Array.Sort<uint>(topicsToAnswer);
+                for (uint i = 0; i < numTopicsToAnswer; i++)
+                {
+                    if (rnd.NextDouble() <= userConfidence)
+                    {
+                        userSimulation[userInd].Set(topicsToAnswer[i] * items_num_per_topic);
+                        correctAns++;
+                    }
+                    else
+                    {
+                        uint num = (uint)anotherRnd.Next(1, (int)items_num_per_topic);
+                        userSimulation[userInd].Set(topicsToAnswer[i] * items_num_per_topic + num);
+                    }
+                }
+            }
+            return correctAns;
+        }
     }
 }
